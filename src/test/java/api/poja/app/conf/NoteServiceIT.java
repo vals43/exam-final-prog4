@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-public class NoteServiceIT extends FacadeIT {
+public class NoteServiceIT extends BaseIT {
 
   @Autowired NoteService noteService;
 

@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class SecurityIT extends FacadeIT {
+public class SecurityIT extends BaseIT {
 
   @Autowired MockMvc mockMvc;
 

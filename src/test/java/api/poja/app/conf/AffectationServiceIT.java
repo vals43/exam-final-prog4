@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-public class AffectationServiceIT extends FacadeIT {
+public class AffectationServiceIT extends BaseIT {
 
   @Autowired AffectationService affectationService;
 

@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-public class SchoolUserDetailsServiceIT extends FacadeIT {
+public class SchoolUserDetailsServiceIT extends BaseIT {
 
   @Autowired UserRepository userRepository;
 

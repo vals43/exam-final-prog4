@@ -18,7 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
-public class CoursServiceIT extends FacadeIT {
+public class CoursServiceIT extends BaseIT {
 
   @Autowired CoursService coursService;
 

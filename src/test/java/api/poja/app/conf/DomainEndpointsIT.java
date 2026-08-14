@@ -37,7 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class DomainEndpointsIT extends FacadeIT {
+public class DomainEndpointsIT extends BaseIT {
 
   @Autowired MockMvc mockMvc;
 

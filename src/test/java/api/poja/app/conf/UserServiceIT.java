@@ -19,7 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-public class UserServiceIT extends FacadeIT {
+public class UserServiceIT extends BaseIT {
 
   @Autowired UserService userService;
 
