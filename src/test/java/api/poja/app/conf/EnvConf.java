@@ -16,5 +16,6 @@ public class EnvConf {
     registry.add("spring.datasource.username", POSTGRES::getUsername);
     registry.add("spring.datasource.password", POSTGRES::getPassword);
     registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
+    registry.add("jwt.secret", () -> "test-only-secret-0123456789-abcdefghijklmnop");
   }
 }
