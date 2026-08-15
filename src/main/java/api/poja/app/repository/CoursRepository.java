@@ -9,4 +9,6 @@ public interface CoursRepository extends JpaRepository<Cours, String> {
   Optional<Cours> findByRef(String ref);
 
   List<Cours> findBySemestre(Integer semestre);
+
+  List<Cours> findBySemestreBetween(Integer semestreDebut, Integer semestreFin);
 }

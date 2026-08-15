@@ -5,6 +5,7 @@ import api.poja.app.model.Cours;
 import api.poja.app.model.Examen;
 import api.poja.app.model.Groupe;
 import api.poja.app.model.Inscription;
+import api.poja.app.model.Note;
 import api.poja.app.model.Parcours;
 import api.poja.app.model.ParcoursType;
 import api.poja.app.model.Role;
@@ -14,11 +15,15 @@ import api.poja.app.repository.CoursRepository;
 import api.poja.app.repository.ExamenRepository;
 import api.poja.app.repository.GroupeRepository;
 import api.poja.app.repository.InscriptionRepository;
+import api.poja.app.repository.NoteRepository;
 import api.poja.app.repository.ParcoursRepository;
 import api.poja.app.repository.UserRepository;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +52,7 @@ public class SchoolDataSeeder implements CommandLineRunner {
   private final ExamenRepository examenRepository;
   private final AffectationRepository affectationRepository;
   private final InscriptionRepository inscriptionRepository;
+  private final NoteRepository noteRepository;
   private final PasswordEncoder passwordEncoder;
 
   @Override
@@ -79,40 +85,125 @@ public class SchoolDataSeeder implements CommandLineRunner {
 
     var coursByRef = createCourses(el, tn);
 
-    inscriptionRepository.saveAll(
-        List.of(
-            newInscription(alice, k1, 1, 1),
-            newInscription(alice, k1, 2, 1),
-            newInscription(alice, k3, 3, 2),
-            newInscription(alice, k1, 4, 2),
-            newInscription(bob, k2, 1, 1),
-            newInscription(bob, k2, 2, 1),
-            newInscription(bob, k1, 3, 2),
-            newInscription(charly, k2, 1, 1),
-            newInscription(charly, k2, 2, 1),
-            newInscription(charly, k2, 3, 2),
-            newInscription(charly, k2, 4, 2)));
+    // Mobilité de groupes : Alice K1 -> K3 -> K4, Bob K2 -> K3 -> K4, Charly K2 -> K3 -> K4
+    var inscriptions =
+        new ArrayList<>(
+            List.of(
+                newInscription(alice, k1, 1, 1),
+                newInscription(alice, k1, 2, 1),
+                newInscription(alice, k3, 3, 2),
+                newInscription(alice, k3, 4, 2),
+                newInscription(alice, k4, 5, 3),
+                newInscription(alice, k4, 6, 3),
+                newInscription(bob, k2, 1, 1),
+                newInscription(bob, k2, 2, 1),
+                newInscription(bob, k3, 3, 2),
+                newInscription(bob, k3, 4, 2),
+                newInscription(bob, k4, 5, 3),
+                newInscription(bob, k4, 6, 3),
+                newInscription(charly, k2, 1, 1),
+                newInscription(charly, k2, 2, 1),
+                newInscription(charly, k3, 3, 2),
+                newInscription(charly, k3, 4, 2),
+                newInscription(charly, k4, 5, 3),
+                newInscription(charly, k4, 6, 3)));
+    inscriptionRepository.saveAll(inscriptions);
 
     createExams(coursByRef, 2024, 1);
+    createExams(coursByRef, 2025, 3);
+    createExams(coursByRef, 2026, 5);
 
-    var year = 2024;
     affectationRepository.saveAll(
         List.of(
-            newAffectation(coursByRef.get("PROK1"), k1, manitra, year),
-            newAffectation(coursByRef.get("PROK1"), k2, manitra, year),
-            newAffectation(coursByRef.get("WEB1"), k1, lova, year),
-            newAffectation(coursByRef.get("WEB1"), k2, lova, year),
-            newAffectation(coursByRef.get("MATH1"), k1, manitra, year),
-            newAffectation(coursByRef.get("MATH1"), k2, manitra, year),
-            newAffectation(coursByRef.get("ELEC1"), k1, lova, year)));
+            newAffectation(coursByRef.get("PROK1"), k1, manitra, 1),
+            newAffectation(coursByRef.get("PROK1"), k2, manitra, 1),
+            newAffectation(coursByRef.get("WEB1"), k1, lova, 1),
+            newAffectation(coursByRef.get("WEB1"), k2, lova, 1),
+            newAffectation(coursByRef.get("MATH1"), k1, manitra, 1),
+            newAffectation(coursByRef.get("MATH1"), k2, manitra, 1),
+            newAffectation(coursByRef.get("ELEC1"), k1, lova, 1),
+            newAffectation(coursByRef.get("TN1"), k2, manitra, 1),
+            newAffectation(coursByRef.get("PROK3"), k3, manitra, 2),
+            newAffectation(coursByRef.get("WEB3"), k3, lova, 2),
+            newAffectation(coursByRef.get("MATH3"), k3, manitra, 2),
+            newAffectation(coursByRef.get("TN1"), k3, manitra, 2),
+            newAffectation(coursByRef.get("ELEC1"), k3, lova, 2),
+            newAffectation(coursByRef.get("PROK4"), k4, manitra, 3),
+            newAffectation(coursByRef.get("WEB4"), k4, lova, 3),
+            newAffectation(coursByRef.get("MATH4"), k4, manitra, 3),
+            newAffectation(coursByRef.get("TN2"), k4, manitra, 3),
+            newAffectation(coursByRef.get("ELEC2"), k4, lova, 3)));
+
+    seedNotes(List.of(alice, bob, charly), inscriptions, coursByRef);
 
     log.info(
-        "Seed terminé : {} cours, {} examens, {} groupes, {} affectations, {} inscriptions.",
+        "Seed terminé : {} cours, {} examens, {} groupes, {} affectations, {} inscriptions, {}"
+            + " notes.",
         coursByRef.size(),
         examenRepository.count(),
         groupeRepository.count(),
         affectationRepository.count(),
-        inscriptionRepository.count());
+        inscriptionRepository.count(),
+        noteRepository.count());
+  }
+
+  private void seedNotes(
+      List<User> students,
+      List<Inscription> inscriptions,
+      java.util.Map<String, Cours> coursByRef) {
+    var notes = new ArrayList<Note>();
+    for (User student : students) {
+      var studentInscriptions =
+          inscriptions.stream()
+              .filter(i -> i.getStudent().getId().equals(student.getId()))
+              .toList();
+      for (Cours cours : coursByRef.values()) {
+        if (!coursBelongsTo(cours, student.getParcours())) {
+          continue;
+        }
+        for (Examen examen : examenRepository.findByCoursId(cours.getId())) {
+          var semestre = cours.getSemestre();
+          if (studentInscriptions.stream().noneMatch(i -> i.getSemestre().equals(semestre))) {
+            continue;
+          }
+          Inscription inscription =
+              studentInscriptions.stream()
+                  .filter(i -> i.getSemestre().equals(semestre))
+                  .findFirst()
+                  .orElseThrow();
+          var valeur = noteValue(student, cours, examen);
+          notes.add(
+              Note.builder()
+                  .student(student)
+                  .examen(examen)
+                  .inscription(inscription)
+                  .valeur(valeur)
+                  .version(1)
+                  .dateCreation(Instant.now())
+                  .build());
+        }
+      }
+    }
+    noteRepository.saveAll(notes);
+  }
+
+  private boolean coursBelongsTo(Cours cours, ParcoursType parcours) {
+    return cours.getParcours() != null
+        && cours.getParcours().stream().anyMatch(p -> p.getCode() == parcours);
+  }
+
+  private BigDecimal noteValue(User student, Cours cours, Examen examen) {
+    var seed =
+        student.getId().hashCode() * 31
+            + cours.getRef().hashCode() * 7
+            + examen.getCoefficient().hashCode();
+    var hash = Math.floorMod(seed, 100);
+    // valeurs réalistes entre 5 et 19, avec une petite probabilité d'échec (< 10)
+    var base = 5 + hash % 15;
+    if (hash % 7 == 0) {
+      base = 4 + hash % 5; // quelques échecs pour rendre les diplômés significatifs
+    }
+    return BigDecimal.valueOf(Math.min(19, base)).setScale(2);
   }
 
   private Parcours newParcours(ParcoursType code, String nom) {
@@ -191,7 +282,7 @@ public class SchoolDataSeeder implements CommandLineRunner {
                 cours("ANG5", "Anglais 5", 3, 5, common),
                 cours("MAG5", "Management", 3, 5, common),
                 cours("PFE6", "Projet de fin d'études", 30, 6, common)));
-    var byRef = new java.util.HashMap<String, Cours>();
+    var byRef = new HashMap<String, Cours>();
     cours.forEach(c -> byRef.put(c.getRef(), c));
     return byRef;
   }
@@ -208,7 +299,7 @@ public class SchoolDataSeeder implements CommandLineRunner {
   }
 
   private void createExams(java.util.Map<String, Cours> coursByRef, int annee, int semestreDebut) {
-    var examens = new java.util.ArrayList<Examen>();
+    var examens = new ArrayList<Examen>();
     coursByRef
         .values()
         .forEach(
