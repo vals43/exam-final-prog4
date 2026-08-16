@@ -65,17 +65,6 @@ public class AffectationService {
     if (teacher.getRole() != Role.TEACHER) {
       throw new ConflictException("L'utilisateur " + dto.teacherId() + " n'est pas un enseignant");
     }
-    if (affectationRepository
-        .findByCoursIdAndGroupeIdAndAnnee(dto.coursId(), dto.groupeId(), dto.annee())
-        .isPresent()) {
-      throw new ConflictException(
-          "Affectation déjà existante pour cours/groupe/année: "
-              + dto.coursId()
-              + "/"
-              + dto.groupeId()
-              + "/"
-              + dto.annee());
-    }
     return affectationRepository.save(
         Affectation.builder()
             .cours(cours)
