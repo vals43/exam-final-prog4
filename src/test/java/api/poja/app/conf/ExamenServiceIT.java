@@ -54,10 +54,25 @@ public class ExamenServiceIT extends BaseIT {
   }
 
   @Test
-  void create_throws_when_coefficients_sum_is_not_one() {
+  void create_accepts_three_exams_incrementally() {
     examenService.create(
         new ExamenDto(
-            null, cours.getId(), Instant.parse("2024-01-15T09:00:00Z"), new BigDecimal("0.4")));
+            null, cours.getId(), Instant.parse("2024-01-15T09:00:00Z"), new BigDecimal("0.5")));
+    examenService.create(
+        new ExamenDto(
+            null, cours.getId(), Instant.parse("2024-01-16T09:00:00Z"), new BigDecimal("0.2")));
+    examenService.create(
+        new ExamenDto(
+            null, cours.getId(), Instant.parse("2024-01-17T09:00:00Z"), new BigDecimal("0.3")));
+
+    assertEquals(3, examenRepository.findByCoursId(cours.getId()).size());
+  }
+
+  @Test
+  void create_throws_when_coefficients_sum_exceeds_one() {
+    examenService.create(
+        new ExamenDto(
+            null, cours.getId(), Instant.parse("2024-01-15T09:00:00Z"), new BigDecimal("0.5")));
 
     assertThrows(
         ConflictException.class,
@@ -67,7 +82,7 @@ public class ExamenServiceIT extends BaseIT {
                     null,
                     cours.getId(),
                     Instant.parse("2024-01-16T09:00:00Z"),
-                    new BigDecimal("0.5"))));
+                    new BigDecimal("0.6"))));
   }
 
   @Test

@@ -47,14 +47,6 @@ public class ExamenService {
               + somme
               + " (doit être inférieure ou égale à 1)");
     }
-    if (existing.compareTo(BigDecimal.ZERO) != 0 && somme.compareTo(BigDecimal.ONE) != 0) {
-      throw new ConflictException(
-          "Somme des coefficients du cours "
-              + cours.getRef()
-              + " = "
-              + somme
-              + " (doit être égale à 1)");
-    }
     return examenRepository.save(
         Examen.builder().cours(cours).date(dto.date()).coefficient(dto.coefficient()).build());
   }

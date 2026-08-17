@@ -22,6 +22,13 @@ public class NoteCalculator {
     if (notes.isEmpty()) {
       return null;
     }
+    BigDecimal totalCoefficients =
+        notes.stream()
+            .map(n -> n.getExamen().getCoefficient())
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    if (totalCoefficients.compareTo(BigDecimal.ONE) != 0) {
+      return null;
+    }
     var somme =
         notes.stream()
             .map(n -> n.getExamen().getCoefficient().multiply(n.getValeur()))

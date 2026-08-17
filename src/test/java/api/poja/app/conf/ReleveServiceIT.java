@@ -207,4 +207,36 @@ public class ReleveServiceIT extends BaseIT {
     assertNull(releve.moyenneGenerale());
     assertEquals(0, releve.creditsValides());
   }
+
+  @Test
+  void genererReleve_ignores_course_whose_exam_coefficients_do_not_sum_to_one() {
+    noteRepository.deleteAll();
+    examenRepository.deleteAll();
+    var examenPartiel =
+        examenRepository.save(
+            Examen.builder()
+                .cours(cours1)
+                .date(Instant.parse("2024-01-15T09:00:00Z"))
+                .coefficient(new BigDecimal("0.5"))
+                .build());
+    var inscription =
+        inscriptionRepository.findAll().stream()
+            .filter(i -> i.getSemestre() == 1)
+            .findFirst()
+            .orElseThrow();
+    noteRepository.save(
+        Note.builder()
+            .student(student)
+            .examen(examenPartiel)
+            .inscription(inscription)
+            .valeur(new BigDecimal("14.00"))
+            .version(1)
+            .dateCreation(Instant.now())
+            .build());
+
+    var releve = releveService.genererReleve(student.getId(), 1, ReleveMode.PROVISOIRE);
+
+    assertNull(releve.lignes().get(0).noteFinale());
+    assertEquals(0, releve.creditsValides());
+  }
 }
