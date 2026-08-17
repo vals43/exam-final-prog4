@@ -30,7 +30,7 @@ public class PdfReleveExporter {
                   + releve.prenom()
                   + " "
                   + releve.nom()
-                  + " (STD "
+                  + " ("
                   + releve.std()
                   + ")",
               FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14, Font.BOLD)));
