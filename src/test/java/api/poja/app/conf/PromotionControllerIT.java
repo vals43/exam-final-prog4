@@ -81,6 +81,20 @@ public class PromotionControllerIT extends BaseIT {
   }
 
   @Test
+  void teacher_sees_promotions_page_without_graduates_link() throws Exception {
+    mockMvc
+        .perform(get("/promotions").with(user("t@hei.school").roles("TEACHER")))
+        .andExpect(status().isOk())
+        .andExpect(view().name("promotions"))
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                .string(
+                    org.hamcrest.Matchers.not(
+                        org.hamcrest.Matchers.containsString(
+                            "Télécharger la liste des diplômés"))));
+  }
+
+  @Test
   void admin_downloads_diplomes_via_redirect() throws Exception {
     var url = new URL("https://bucket.example/diplomes/promo-1.xlsx");
     when(diplomeService.genererListeDiplomes(1)).thenReturn(url);

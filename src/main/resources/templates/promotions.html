@@ -21,9 +21,10 @@
         <tr th:each="promo : ${promotions}">
           <td th:text="${promo} + ' (promotion)'">2024</td>
           <td>
-            <a th:href="@{/promotions/{annee}/diplomes(annee=${promo})}">
+            <a th:if="${isAdmin}" th:href="@{/promotions/{annee}/diplomes(annee=${promo})}">
               Télécharger la liste des diplômés
             </a>
+            <span th:unless="${isAdmin}">—</span>
           </td>
         </tr>
       </tbody>
