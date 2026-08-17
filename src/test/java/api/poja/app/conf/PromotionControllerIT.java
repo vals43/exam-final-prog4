@@ -1,7 +1,9 @@
 package api.poja.app.conf;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -13,10 +15,13 @@ import api.poja.app.model.User;
 import api.poja.app.repository.GroupeRepository;
 import api.poja.app.repository.InscriptionRepository;
 import api.poja.app.repository.UserRepository;
+import api.poja.app.service.DiplomeService;
+import java.net.URL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,6 +36,8 @@ public class PromotionControllerIT extends BaseIT {
   @Autowired GroupeRepository groupeRepository;
 
   @Autowired InscriptionRepository inscriptionRepository;
+
+  @MockBean DiplomeService diplomeService;
 
   @BeforeEach
   void setup() {
@@ -71,6 +78,17 @@ public class PromotionControllerIT extends BaseIT {
         .perform(get("/promotions").with(user("admin@hei.school").roles("ADMIN")))
         .andExpect(status().isOk())
         .andExpect(view().name("promotions"));
+  }
+
+  @Test
+  void admin_downloads_diplomes_via_redirect() throws Exception {
+    var url = new URL("https://bucket.example/diplomes/promo-1.xlsx");
+    when(diplomeService.genererListeDiplomes(1)).thenReturn(url);
+
+    mockMvc
+        .perform(get("/promotions/1/diplomes").with(user("admin@hei.school").roles("ADMIN")))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl(url.toExternalForm()));
   }
 
   @Test
