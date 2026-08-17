@@ -76,15 +76,25 @@ public class AffectationServiceIT extends BaseIT {
   }
 
   @Test
-  void create_throws_when_duplicate() {
+  void create_allows_multiple_teachers_on_same_cours_groupe_annee() {
+    var secondTeacher =
+        userRepository.save(
+            User.builder()
+                .nom("Doe")
+                .prenom("Jane")
+                .email("t2@hei.school")
+                .password("x")
+                .role(Role.TEACHER)
+                .build());
     affectationService.create(
         new AffectationDto(null, cours.getId(), groupe.getId(), teacher.getId(), 2024));
 
-    assertThrows(
-        ConflictException.class,
-        () ->
-            affectationService.create(
-                new AffectationDto(null, cours.getId(), groupe.getId(), teacher.getId(), 2024)));
+    var second =
+        affectationService.create(
+            new AffectationDto(null, cours.getId(), groupe.getId(), secondTeacher.getId(), 2024));
+
+    assertEquals(2, affectationRepository.findByCoursId(cours.getId()).size());
+    assertEquals(secondTeacher.getId(), second.getTeacher().getId());
   }
 
   @Test

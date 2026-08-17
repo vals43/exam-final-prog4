@@ -10,6 +10,8 @@ public interface InscriptionRepository extends JpaRepository<Inscription, String
 
   List<Inscription> findByGroupeId(String groupeId);
 
+  List<Inscription> findByAnnee(Integer annee);
+
   List<Inscription> findByStudentIdAndAnnee(String studentId, Integer annee);
 
   @Query("select distinct i.annee from Inscription i order by i.annee")
