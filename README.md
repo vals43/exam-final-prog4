@@ -1,42 +1,103 @@
-# poja-async-mailing-template — async email workers for Spring Boot
+# HEI — Gestion des notes (exam-final-prog4)
 
-A [Poja](https://poja.io) starter template with **SQS-powered async email sending** pre-configured. Define an event, wire a consumer, push — no queue infrastructure to manage.
+Application de gestion des notes sur le parcours de trois ans à HEI (PROG4/SYS3).
+Spring Boot 3.2.2 + PostgreSQL + JWT, déployée sur AWS via le template [Poja](https://poja.io).
 
-→ **[Full guide on docs.poja.io](https://docs.poja.io/docs/hello-world-but-with-asynchronous-reply-by-email)**
+## Fonctionnalités
 
-Or hit the `Deploy to Poja` button to **deploy this template on your account** : 
+- **3 rôles (Spring Security + JWT stateless)** :
+  - `STUDENT` : consulte ses propres notes (`/student/notes`).
+  - `TEACHER` : note uniquement ses matières affectées (`/teacher/notes`), avec historisation (`NoteHistory`).
+  - `ADMIN` : CRUD utilisateurs, cours, affectations, examens, relevés et diplômés.
+- **Deux parcours** : EL et TN — les notes d'un parcours n'apparaissent jamais sur le bulletin de l'autre.
+- **Groupes non fixes** : un étudiant peut changer de groupe, ses notes sont conservées via les inscriptions.
+- **Relevés de notes PDF** : provisoire ou complet (moyenne générale + crédits), upload S3 puis envoi par **email asynchrone** (SQS + SES).
+- **Liste des diplômés XLSX** : triée par rang, téléchargeable directement (S3 pre-signed), pour chaque promotion.
+- **Interface Thymeleaf** : liste des promotions + bouton « Télécharger la liste des diplômés ».
 
+## Déploiement (préproduction)
 
-[![Deploy on Poja](https://img.shields.io/badge/Deploy%20On%20Poja-007BFF?style=for-the-badge)](https://console.poja.io/applications/create/clone/?templateId=84df308f-8da6-4b70-a83f-0b146b1b8e5f)
-
----
-
-### What you get
-
-Two classes to write. Poja handles the queue, the worker, and the retries.
-
-```java
-// 1. The event — in endpoint.event.model
-public class SendEmailRequested extends PojaEvent {
-  private String to;
-
-  @Override public Duration maxConsumerDuration() { return Duration.ofSeconds(45); }
-  @Override public Duration maxConsumerBackoffBetweenRetries() { return Duration.ofSeconds(30); }
-}
-
-// 2. The consumer — in service.event (must be named {EventName}Service)
-@Service @AllArgsConstructor
-public class SendEmailRequestedService implements Consumer<SendEmailRequested> {
-  private final Mailer mailer;
-
-  @Override
-  public void accept(SendEmailRequested event) {
-    mailer.accept(new Email(new InternetAddress(event.getTo()),
-        List.of(), List.of(), "Subject", "Body", List.of()));
-  }
-}
+```
+https://ioc5c5l5twlvmdapgdfduhzrvq0ddbau.lambda-url.eu-west-3.on.aws
 ```
 
-Produce the event from any controller — Poja routes it to the worker automatically.
+## Démarrage local
 
-> Part of the [Poja platform](https://poja.io) — deploy Spring Boot in minutes.
+```bash
+export JAVA_HOME=$HOME/.jdks/ms-21.0.11   # JDK 21
+export PATH=$JAVA_HOME/bin:$PATH
+export JWT_SECRET=<secret>
+export SPRING_DATASOURCE_URL=<postgres-url>
+./gradlew test
+./gradlew bootRun
+```
+
+## Comptes de démonstration (seed)
+
+| Email | Rôle | Mot de passe |
+|-------|------|--------------|
+| admin@hei.edu | ADMIN | password123 |
+| manitra@hei.edu | TEACHER | password123 |
+| alice@hei.edu | STUDENT (EL) | password123 |
+| bob@hei.edu | STUDENT (EL) | password123 |
+| charly@hei.edu | STUDENT (TN) | password123 |
+
+Le seed charge 3 ans de cours/examens (30 crédits/semestre, 60/an), des affectations, des inscriptions avec changements de groupe (K1→K3→K4) et des notes réalistes.
+
+## API principales
+
+| Méthode | Endpoint | Rôle |
+|---------|----------|------|
+| POST | `/login` | public |
+| GET | `/student/notes` | STUDENT |
+| POST | `/teacher/notes` | TEACHER |
+| GET | `/teacher/affectations` | TEACHER |
+| GET | `/admin/users?role=` | ADMIN |
+| POST | `/admin/users` | ADMIN |
+| GET | `/admin/cours` | ADMIN |
+| POST | `/admin/affectations` | ADMIN |
+| GET | `/admin/examens?coursId=` | ADMIN |
+| POST | `/admin/examens` (somme des coefficients = 1) | ADMIN |
+| POST | `/admin/releves/{studentId}/{annee}?mode=PROVISOIRE\|COMPLET` | ADMIN |
+| GET | `/promotions` | ADMIN, TEACHER |
+| GET | `/promotions/{annee}/diplomes` | ADMIN |
+
+## Règles métier
+
+- Diplôme = au moins 10/20 à tous les cours du parcours (sur les 3 ans).
+- Somme des coefficients des examens d'un cours = 1.
+- Toute modification de note crée une entrée `NoteHistory` (réclamations tracées).
+- Note finale d'un cours = `Σ (coefficient × valeur)` des examens.
+
+## Structure
+
+```
+src/main/java/api/poja/app/
+├── config          → SecurityConfig (JWT stateless)
+├── security        → JwtService, JwtAuthenticationFilter
+├── endpoint/rest   → Controllers + DTOs
+├── service         → Logique métier (notes, relevés, diplômés, calculs)
+├── service/export  → Génération PDF (OpenPDF) et XLSX (Apache POI)
+├── repository      → JPA repositories
+├── model           → Entités JPA
+├── mail            → Mailer (SES)
+├── file/bucket     → BucketComponent (S3)
+└── endpoint/event  → Événements async (SendEmailRequested)
+```
+
+## Tests
+
+```bash
+./gradlew test
+```
+
+Intégration avec Testcontainers (PostgreSQL) + couverture JaCoCo (≥ 80 %).
+
+## Documentation
+
+Voir `docs/` : `sujet.md`, `plan.md`, `architecture.md`, `modele-donnees.md`, `video-script.md`.
+
+## Projet réalisé en binôme
+
+- **A** : Spring Security + JWT, CRUD admin, relevés PDF → S3 → email async, UI Thymeleaf.
+- **B** : notes/historisation, calculs de moyennes, diplômés + rang, export XLSX, validation examens.
