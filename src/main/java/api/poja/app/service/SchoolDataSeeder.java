@@ -25,6 +25,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -81,7 +82,11 @@ public class SchoolDataSeeder implements CommandLineRunner {
     var bob = newUser("STD102", "Rakoto", "Bob", "bob@hei.edu", Role.STUDENT, ParcoursType.EL);
     var charly =
         newUser("STD103", "Andria", "Charly", "charly@hei.edu", Role.STUDENT, ParcoursType.TN);
-    userRepository.saveAll(List.of(admin, manitra, lova, alice, bob, charly));
+    var david =
+        newUser("STD104", "Rasoanaivo", "David", "david@hei.edu", Role.STUDENT, ParcoursType.EL);
+    var emma =
+        newUser("STD105", "Razafindrakoto", "Emma", "emma@hei.edu", Role.STUDENT, ParcoursType.TN);
+    userRepository.saveAll(List.of(admin, manitra, lova, alice, bob, charly, david, emma));
 
     var coursByRef = createCourses(el, tn);
 
@@ -106,7 +111,19 @@ public class SchoolDataSeeder implements CommandLineRunner {
                 newInscription(charly, k3, 3, 2),
                 newInscription(charly, k3, 4, 2),
                 newInscription(charly, k4, 5, 3),
-                newInscription(charly, k4, 6, 3)));
+                newInscription(charly, k4, 6, 3),
+                newInscription(david, k1, 1, 1),
+                newInscription(david, k1, 2, 1),
+                newInscription(david, k3, 3, 2),
+                newInscription(david, k3, 4, 2),
+                newInscription(david, k4, 5, 3),
+                newInscription(david, k4, 6, 3),
+                newInscription(emma, k2, 1, 1),
+                newInscription(emma, k2, 2, 1),
+                newInscription(emma, k3, 3, 2),
+                newInscription(emma, k3, 4, 2),
+                newInscription(emma, k4, 5, 3),
+                newInscription(emma, k4, 6, 3)));
     inscriptionRepository.saveAll(inscriptions);
 
     createExams(coursByRef, 2024, 1);
@@ -134,7 +151,7 @@ public class SchoolDataSeeder implements CommandLineRunner {
             newAffectation(coursByRef.get("TN2"), k4, manitra, 3),
             newAffectation(coursByRef.get("ELEC2"), k4, lova, 3)));
 
-    seedNotes(List.of(alice, bob, charly), inscriptions, coursByRef);
+    seedNotes(List.of(alice, bob, charly, david, emma), inscriptions, coursByRef);
 
     log.info(
         "Seed terminé : {} cours, {} examens, {} groupes, {} affectations, {} inscriptions, {}"
@@ -192,7 +209,23 @@ public class SchoolDataSeeder implements CommandLineRunner {
         && cours.getParcours().stream().anyMatch(p -> p.getCode() == parcours);
   }
 
+  private static final Set<String> REUSSITE_STDS = Set.of("STD102", "STD104", "STD105");
+  private static final Set<String> ECHEC_STDS = Set.of("STD101", "STD103");
+
   private BigDecimal noteValue(User student, Cours cours, Examen examen) {
+    if (REUSSITE_STDS.contains(student.getStd())) {
+      var seed =
+          student.getStd().hashCode() * 31
+              + cours.getRef().hashCode() * 7
+              + examen.getCoefficient().hashCode();
+      var hash = Math.floorMod(seed, 100);
+      // réussite garantie : note entre 11 et 19
+      return BigDecimal.valueOf(11 + hash % 9).setScale(2);
+    }
+    if (ECHEC_STDS.contains(student.getStd()) && cours.getRef().equals("MATH1")) {
+      // échec garanti sur au moins un cours pour rendre la liste des diplômés significative
+      return new BigDecimal("5.00");
+    }
     var seed =
         student.getId().hashCode() * 31
             + cours.getRef().hashCode() * 7
