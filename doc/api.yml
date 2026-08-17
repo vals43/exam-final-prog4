@@ -1,0 +1,745 @@
+openapi: 3.0.3
+info:
+  title: HEI — Gestion des notes (exam-final-prog4)
+  description: >
+    API de gestion des notes sur le parcours de trois ans à HEI (PROG4/SYS3).
+    Authentification JWT stateless. Trois rôles : ADMIN, TEACHER, STUDENT.
+    Endpoints /admin/** réservés à ADMIN, /teacher/** à TEACHER, /student/** à STUDENT.
+  version: 1.0.0
+servers:
+  - url: https://ioc5c5l5twlvmdapgdfduhzrvq0ddbau.lambda-url.eu-west-3.on.aws
+    description: Préproduction
+tags:
+  - name: Auth
+    description: Authentification
+  - name: Admin
+    description: Gestion (ADMIN)
+  - name: Teacher
+    description: Notations (TEACHER)
+  - name: Student
+    description: Consultation (STUDENT)
+  - name: Promotions
+    description: Promotions et diplômés
+paths:
+  /hello:
+    get:
+      tags: [Auth]
+      summary: Endpoint de démonstration du template Poja
+      description: Publie un événement d'email. Hors périmètre métier.
+      security: []
+      parameters:
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: Message retourné
+          content:
+            text/plain:
+              schema:
+                type: string
+  /login:
+    post:
+      tags: [Auth]
+      summary: Se connecter et obtenir un JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Token JWT + profil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Identifiants invalides
+  /admin/whoami:
+    get:
+      tags: [Admin]
+      summary: Profil de l'admin connecté
+      responses:
+        '200':
+          description: Email de l'utilisateur
+          content:
+            text/plain:
+              schema:
+                type: string
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: Lister les utilisateurs par rôle
+      parameters:
+        - name: role
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          description: Liste des utilisateurs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDto'
+    post:
+      tags: [Admin]
+      summary: Créer un utilisateur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+      responses:
+        '200':
+          description: Utilisateur créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '409':
+          description: Email déjà utilisé
+  /admin/users/{id}:
+    get:
+      tags: [Admin]
+      summary: Récupérer un utilisateur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '404':
+          description: Introuvable
+    put:
+      tags: [Admin]
+      summary: Modifier un utilisateur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+      responses:
+        '200':
+          description: Utilisateur modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '404':
+          description: Introuvable
+    delete:
+      tags: [Admin]
+      summary: Supprimer un utilisateur
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          description: Introuvable
+  /admin/cours:
+    get:
+      tags: [Admin]
+      summary: Lister les cours
+      responses:
+        '200':
+          description: Liste des cours
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CoursDto'
+    post:
+      tags: [Admin]
+      summary: Créer un cours
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoursDto'
+      responses:
+        '200':
+          description: Cours créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursDto'
+        '409':
+          description: Référence déjà existante
+  /admin/cours/{id}:
+    get:
+      tags: [Admin]
+      summary: Récupérer un cours
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cours
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursDto'
+        '404':
+          description: Introuvable
+    put:
+      tags: [Admin]
+      summary: Modifier un cours
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoursDto'
+      responses:
+        '200':
+          description: Cours modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursDto'
+        '404':
+          description: Introuvable
+    delete:
+      tags: [Admin]
+      summary: Supprimer un cours
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          description: Introuvable
+  /admin/affectations:
+    get:
+      tags: [Admin]
+      summary: Lister les affectations prof → cours/groupe/année
+      responses:
+        '200':
+          description: Liste des affectations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AffectationDto'
+    post:
+      tags: [Admin]
+      summary: Affecter un prof à un cours sur un groupe pour une année
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AffectationDto'
+      responses:
+        '200':
+          description: Affectation créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffectationDto'
+        '409':
+          description: Affectation déjà existante (ou conflit)
+  /admin/affectations/{id}:
+    get:
+      tags: [Admin]
+      summary: Récupérer une affectation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Affectation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffectationDto'
+        '404':
+          description: Introuvable
+    delete:
+      tags: [Admin]
+      summary: Supprimer une affectation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          description: Introuvable
+  /admin/examens:
+    get:
+      tags: [Admin]
+      summary: Lister les examens d'un cours
+      parameters:
+        - name: coursId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des examens
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExamenDto'
+    post:
+      tags: [Admin]
+      summary: Créer un examen (la somme des coefficients du cours doit valoir 1)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExamenDto'
+      responses:
+        '200':
+          description: Examen créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamenDto'
+        '409':
+          description: Somme des coefficients invalide
+  /admin/examens/{id}:
+    get:
+      tags: [Admin]
+      summary: Récupérer un examen
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Examen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExamenDto'
+        '404':
+          description: Introuvable
+    delete:
+      tags: [Admin]
+      summary: Supprimer un examen
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Supprimé
+        '404':
+          description: Introuvable
+  /admin/releves/{studentId}/{annee}:
+    post:
+      tags: [Admin]
+      summary: Générer le relevé de notes PDF d'un étudiant pour une année
+      description: >
+        Génère le PDF, le dépose sur S3, publie l'événement asynchrone SendEmailRequested
+        (envoi par email via SES) puis renvoie le relevé détaillé.
+        En mode COMPLET, exige que toutes les notes de l'année soient saisies (409 sinon).
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: annee
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+            description: Année de cursus (1 à 3), pas l'année calendaire
+        - name: mode
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ReleveMode'
+      responses:
+        '200':
+          description: Relevé généré et envoyé par email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleveDto'
+        '404':
+          description: Étudiant introuvable
+        '409':
+          description: Relevé complet impossible (notes manquantes)
+  /teacher/whoami:
+    get:
+      tags: [Teacher]
+      summary: Profil du prof connecté
+      responses:
+        '200':
+          description: Email de l'utilisateur
+          content:
+            text/plain:
+              schema:
+                type: string
+  /teacher/affectations:
+    get:
+      tags: [Teacher]
+      summary: Cours du prof connecté (toutes années)
+      responses:
+        '200':
+          description: Liste des affectations du prof
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AffectationDto'
+  /teacher/affectations/{groupeId}/{annee}:
+    get:
+      tags: [Teacher]
+      summary: Affectations du prof pour un groupe et une année
+      parameters:
+        - name: groupeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: annee
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+      responses:
+        '200':
+          description: Liste des affectations filtrées
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AffectationDto'
+  /teacher/notes:
+    post:
+      tags: [Teacher]
+      summary: Noter un étudiant à un examen de sa matière
+      description: >
+        Le prof ne peut noter que des étudiants de ses propres matières (vérifié).
+        Chaque modification crée une entrée NoteHistory.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteDto'
+      responses:
+        '204':
+          description: Note enregistrée
+        '400':
+          description: Validation (valeur hors [0,20], etc.)
+        '403':
+          description: Pas votre matière
+  /student/whoami:
+    get:
+      tags: [Student]
+      summary: Profil de l'étudiant connecté
+      responses:
+        '200':
+          description: Email de l'utilisateur
+          content:
+            text/plain:
+              schema:
+                type: string
+  /student/notes:
+    get:
+      tags: [Student]
+      summary: Notes de l'étudiant connecté
+      description: >
+        Seules les notes de son parcours (EL ou TN) sont renvoyées.
+        Les notes sont regroupées par cours, avec coefficient et version.
+      responses:
+        '200':
+          description: Liste des notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NoteViewDto'
+  /promotions:
+    get:
+      tags: [Promotions]
+      summary: Page Thymeleaf listant les promotions
+      description: Rendu HTML (Thymeleaf). Retourne les années de promotion disponibles.
+      responses:
+        '200':
+          description: Page HTML
+          content:
+            text/html:
+              schema:
+                type: string
+  /promotions/{annee}/diplomes:
+    get:
+      tags: [Promotions]
+      summary: Télécharger la liste des diplômés d'une promotion (XLSX)
+      description: >
+        Génère le fichier XLSX (rang, STD, nom, prénom, moyenne), le dépose sur S3
+        et redirige vers une URL pre-signée (15 min).
+        Diplômés = au moins 10/20 à tous les cours sur les 3 ans.
+      parameters:
+        - name: annee
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+      responses:
+        '303':
+          description: Redirection vers l'URL pre-signée S3 du fichier XLSX
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        '500':
+          description: Aucune promotion pour cette année
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Role:
+      type: string
+      enum: [ADMIN, TEACHER, STUDENT]
+    ParcoursType:
+      type: string
+      enum: [EL, TN]
+    ReleveMode:
+      type: string
+      enum: [PROVISOIRE, COMPLET]
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        email:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+    UserDto:
+      type: object
+      required: [nom, prenom, email, role]
+      properties:
+        id:
+          type: string
+        std:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+        parcours:
+          $ref: '#/components/schemas/ParcoursType'
+    CoursDto:
+      type: object
+      required: [ref, intitule, credits, semestre]
+      properties:
+        id:
+          type: string
+        ref:
+          type: string
+          example: EL22
+        intitule:
+          type: string
+        credits:
+          type: integer
+        semestre:
+          type: integer
+          minimum: 1
+          maximum: 6
+    AffectationDto:
+      type: object
+      required: [coursId, groupeId, teacherId, annee]
+      properties:
+        id:
+          type: string
+        coursId:
+          type: string
+        groupeId:
+          type: string
+        teacherId:
+          type: string
+        annee:
+          type: integer
+          minimum: 1
+          maximum: 3
+    ExamenDto:
+      type: object
+      required: [coursId, date, coefficient]
+      properties:
+        id:
+          type: string
+        coursId:
+          type: string
+        date:
+          type: string
+          format: date-time
+        coefficient:
+          type: number
+          format: double
+          example: 0.5
+    NoteDto:
+      type: object
+      required: [studentId, examenId, inscriptionId, valeur]
+      properties:
+        id:
+          type: string
+        studentId:
+          type: string
+        examenId:
+          type: string
+        inscriptionId:
+          type: string
+        valeur:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 20
+    NoteViewDto:
+      type: object
+      properties:
+        id:
+          type: string
+        coursRef:
+          type: string
+        coursIntitule:
+          type: string
+        semestre:
+          type: integer
+        examenDate:
+          type: string
+          format: date-time
+        coefficient:
+          type: number
+          format: double
+        valeur:
+          type: number
+          format: double
+        version:
+          type: integer
+    LigneReleve:
+      type: object
+      properties:
+        coursRef:
+          type: string
+        coursIntitule:
+          type: string
+        semestre:
+          type: integer
+        credits:
+          type: integer
+        noteFinale:
+          type: number
+          format: double
+        valide:
+          type: boolean
+    ReleveDto:
+      type: object
+      properties:
+        studentId:
+          type: string
+        std:
+          type: string
+        nom:
+          type: string
+        prenom:
+          type: string
+        annee:
+          type: integer
+        mode:
+          $ref: '#/components/schemas/ReleveMode'
+        moyenneGenerale:
+          type: number
+          format: double
+        creditsValides:
+          type: integer
+        lignes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LigneReleve'
+security:
+  - bearerAuth: []
