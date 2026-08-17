@@ -1,5 +1,6 @@
 package api.poja.app.service;
 
+import api.poja.app.endpoint.rest.controller.DiplomeMapper;
 import api.poja.app.endpoint.rest.model.DiplomeDto;
 import api.poja.app.file.bucket.BucketComponent;
 import api.poja.app.model.Cours;
@@ -34,6 +35,7 @@ public class DiplomeService {
   private final BucketComponent bucketComponent;
   private final NoteCalculator noteCalculator;
   private final XlsxDiplomesExporter xlsxDiplomesExporter;
+  private final DiplomeMapper diplomeMapper;
 
   @Transactional(readOnly = true)
   public URL genererListeDiplomes(Integer annee) {
@@ -57,11 +59,7 @@ public class DiplomeService {
         .map(s -> toDiplome(s, annee))
         .filter(d -> d != null)
         .sorted(Comparator.comparing(DiplomeDto::moyenneGenerale).reversed())
-        .forEach(
-            d ->
-                ranked.add(
-                    new DiplomeDto(
-                        ranked.size() + 1, d.std(), d.nom(), d.prenom(), d.moyenneGenerale())));
+        .forEach(d -> ranked.add(diplomeMapper.withRang(ranked.size() + 1, d)));
     return ranked;
   }
 

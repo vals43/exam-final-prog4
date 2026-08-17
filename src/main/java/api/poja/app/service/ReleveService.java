@@ -2,6 +2,7 @@ package api.poja.app.service;
 
 import api.poja.app.endpoint.event.EventProducer;
 import api.poja.app.endpoint.event.model.SendEmailRequested;
+import api.poja.app.endpoint.rest.controller.ReleveMapper;
 import api.poja.app.endpoint.rest.model.LigneReleve;
 import api.poja.app.endpoint.rest.model.ReleveDto;
 import api.poja.app.endpoint.rest.model.ReleveMode;
@@ -33,6 +34,7 @@ public class ReleveService {
   private final EventProducer<SendEmailRequested> eventProducer;
   private final NoteCalculator noteCalculator;
   private final PdfReleveExporter pdfReleveExporter;
+  private final ReleveMapper releveMapper;
 
   @Transactional
   public ReleveDto genererReleve(String studentId, Integer annee, ReleveMode mode) {
@@ -66,7 +68,7 @@ public class ReleveService {
         lignes.stream().filter(LigneReleve::valide).mapToInt(LigneReleve::credits).sum();
     BigDecimal moyenne = moyennePonderee(lignes);
     ReleveDto releve =
-        new ReleveDto(
+        releveMapper.toDto(
             studentId,
             student.getStd(),
             student.getNom(),
