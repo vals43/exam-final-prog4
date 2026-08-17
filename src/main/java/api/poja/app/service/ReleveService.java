@@ -79,7 +79,7 @@ public class ReleveService {
             creditsValides,
             lignes);
 
-    var key = "releves/" + student.getStd() + "/" + annee + ".pdf";
+    var key = "releves/" + student.getStd() + "/releve-annee-" + annee + ".pdf";
     bucketComponent.upload(pdfReleveExporter.generer(releve), key);
     eventProducer.accept(
         List.of(

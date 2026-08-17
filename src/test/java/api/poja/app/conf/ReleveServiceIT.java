@@ -166,7 +166,7 @@ public class ReleveServiceIT extends BaseIT {
     assertEquals(0, new BigDecimal("12.00").compareTo(releve.moyenneGenerale()));
     assertEquals(ReleveMode.COMPLET, releve.mode());
 
-    verify(bucketComponent).upload(any(File.class), eq("releves/STD-0001/1.pdf"));
+    verify(bucketComponent).upload(any(File.class), eq("releves/STD-0001/releve-annee-1.pdf"));
     verify(eventProducer).accept(any());
   }
 
