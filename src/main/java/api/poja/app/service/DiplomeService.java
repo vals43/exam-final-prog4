@@ -4,8 +4,6 @@ import api.poja.app.endpoint.rest.model.DiplomeDto;
 import api.poja.app.file.bucket.BucketComponent;
 import api.poja.app.model.Cours;
 import api.poja.app.model.Inscription;
-import api.poja.app.model.Note;
-import api.poja.app.model.ParcoursType;
 import api.poja.app.model.Role;
 import api.poja.app.model.User;
 import api.poja.app.repository.CoursRepository;
@@ -15,7 +13,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,13 +31,13 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 public class DiplomeService {
 
-  private static final BigDecimal SEUIL_DIPLOME = new BigDecimal("10.00");
   private static final String BUCKET_PREFIX = "diplomes/";
 
   private final InscriptionRepository inscriptionRepository;
   private final NoteRepository noteRepository;
   private final CoursRepository coursRepository;
   private final BucketComponent bucketComponent;
+  private final NoteCalculator noteCalculator;
 
   @Transactional(readOnly = true)
   public URL genererListeDiplomes(Integer annee) {
@@ -85,39 +82,22 @@ public class DiplomeService {
             .collect(Collectors.groupingBy(n -> n.getExamen().getCours().getId()));
     var coursSuivis =
         coursRepository.findBySemestreBetween(1, annee * 2).stream()
-            .filter(c -> appartientAuParcours(c, student.getParcours()))
+            .filter(c -> noteCalculator.appartientAuParcours(c, student.getParcours()))
             .toList();
-    BigDecimal sommePonderee = BigDecimal.ZERO;
-    int totalCredits = 0;
+    var notesEtCredits = new ArrayList<NoteCalculator.NoteEtCredits>();
     for (Cours cours : coursSuivis) {
-      BigDecimal finale = noteFinale(notesByCours.getOrDefault(cours.getId(), List.of()));
-      if (finale == null || finale.compareTo(SEUIL_DIPLOME) < 0) {
+      BigDecimal finale =
+          noteCalculator.noteFinale(notesByCours.getOrDefault(cours.getId(), List.of()));
+      if (!NoteCalculator.estValide(finale)) {
         return null;
       }
-      sommePonderee = sommePonderee.add(finale.multiply(BigDecimal.valueOf(cours.getCredits())));
-      totalCredits += cours.getCredits();
+      notesEtCredits.add(new NoteCalculator.NoteEtCredits(finale, cours.getCredits()));
     }
-    if (totalCredits == 0) {
+    BigDecimal moyenne = NoteCalculator.moyennePondereeValidee(notesEtCredits);
+    if (moyenne == null) {
       return null;
     }
-    var moyenne = sommePonderee.divide(BigDecimal.valueOf(totalCredits), 2, RoundingMode.HALF_UP);
     return new DiplomeDto(0, student.getStd(), student.getNom(), student.getPrenom(), moyenne);
-  }
-
-  private boolean appartientAuParcours(Cours cours, ParcoursType parcours) {
-    return cours.getParcours() != null
-        && cours.getParcours().stream().anyMatch(p -> p.getCode() == parcours);
-  }
-
-  private BigDecimal noteFinale(List<Note> notes) {
-    if (notes.isEmpty()) {
-      return null;
-    }
-    var somme =
-        notes.stream()
-            .map(n -> n.getExamen().getCoefficient().multiply(n.getValeur()))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    return somme.setScale(2, RoundingMode.HALF_UP);
   }
 
   private File genererXlsx(List<DiplomeDto> diplomes, Integer annee) {

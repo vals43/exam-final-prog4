@@ -8,7 +8,6 @@ import api.poja.app.endpoint.rest.model.ReleveMode;
 import api.poja.app.file.bucket.BucketComponent;
 import api.poja.app.model.Cours;
 import api.poja.app.model.Note;
-import api.poja.app.model.ParcoursType;
 import api.poja.app.model.Role;
 import api.poja.app.model.User;
 import api.poja.app.repository.CoursRepository;
@@ -25,7 +24,6 @@ import com.lowagie.text.pdf.PdfWriter;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.List;
@@ -38,13 +36,12 @@ import org.springframework.transaction.annotation.Transactional;
 @AllArgsConstructor
 public class ReleveService {
 
-  private static final BigDecimal SEUIL_VALIDATION = new BigDecimal("10.00");
-
   private final UserService userService;
   private final CoursRepository coursRepository;
   private final NoteRepository noteRepository;
   private final BucketComponent bucketComponent;
   private final EventProducer<SendEmailRequested> eventProducer;
+  private final NoteCalculator noteCalculator;
 
   @Transactional
   public ReleveDto genererReleve(String studentId, Integer annee, ReleveMode mode) {
@@ -56,7 +53,7 @@ public class ReleveService {
     int semestreFin = annee * 2;
     List<Cours> coursAnnee =
         coursRepository.findBySemestreBetween(semestreDebut, semestreFin).stream()
-            .filter(c -> appartientAuParcours(c, student.getParcours()))
+            .filter(c -> noteCalculator.appartientAuParcours(c, student.getParcours()))
             .toList();
     var notesByCours =
         noteRepository.findByStudentId(studentId).stream()
@@ -102,46 +99,23 @@ public class ReleveService {
     return releve;
   }
 
-  private boolean appartientAuParcours(Cours cours, ParcoursType parcours) {
-    return cours.getParcours() != null
-        && cours.getParcours().stream().anyMatch(p -> p.getCode() == parcours);
-  }
-
   private LigneReleve toLigne(Cours cours, List<Note> notes) {
-    if (notes.isEmpty()) {
-      return new LigneReleve(
-          cours.getRef(),
-          cours.getIntitule(),
-          cours.getSemestre(),
-          cours.getCredits(),
-          null,
-          false);
-    }
-    BigDecimal somme = BigDecimal.ZERO;
-    for (Note note : notes) {
-      somme = somme.add(note.getExamen().getCoefficient().multiply(note.getValeur()));
-    }
-    BigDecimal finale = somme.setScale(2, RoundingMode.HALF_UP);
+    BigDecimal finale = noteCalculator.noteFinale(notes);
     return new LigneReleve(
         cours.getRef(),
         cours.getIntitule(),
         cours.getSemestre(),
         cours.getCredits(),
         finale,
-        finale.compareTo(SEUIL_VALIDATION) >= 0);
+        NoteCalculator.estValide(finale));
   }
 
   private BigDecimal moyennePonderee(List<LigneReleve> lignes) {
-    var valides = lignes.stream().filter(LigneReleve::valide).toList();
-    if (valides.isEmpty()) {
-      return null;
-    }
-    int totalCredits = valides.stream().mapToInt(LigneReleve::credits).sum();
-    BigDecimal somme =
-        valides.stream()
-            .map(l -> l.noteFinale().multiply(BigDecimal.valueOf(l.credits())))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    return somme.divide(BigDecimal.valueOf(totalCredits), 2, RoundingMode.HALF_UP);
+    var notesEtCredits =
+        lignes.stream()
+            .map(l -> new NoteCalculator.NoteEtCredits(l.noteFinale(), l.credits()))
+            .toList();
+    return NoteCalculator.moyennePondereeValidee(notesEtCredits);
   }
 
   private File genererPdf(ReleveDto releve) {
