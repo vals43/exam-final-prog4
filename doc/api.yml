@@ -162,7 +162,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Supprimé
         '404':
           description: Introuvable
@@ -250,7 +250,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Supprimé
         '404':
           description: Introuvable
@@ -284,7 +284,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AffectationDto'
         '409':
-          description: Affectation déjà existante (ou conflit)
+          description: Utilisateur non enseignant (ou conflit)
   /admin/affectations/{id}:
     get:
       tags: [Admin]
@@ -314,7 +314,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Supprimé
         '404':
           description: Introuvable
@@ -384,7 +384,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        '200':
           description: Supprimé
         '404':
           description: Introuvable
@@ -490,7 +490,7 @@ paths:
             schema:
               $ref: '#/components/schemas/NoteDto'
       responses:
-        '204':
+        '200':
           description: Note enregistrée
         '400':
           description: Validation (valeur hors [0,20], etc.)
@@ -552,15 +552,13 @@ paths:
             minimum: 1
             maximum: 3
       responses:
-        '303':
+        '302':
           description: Redirection vers l'URL pre-signée S3 du fichier XLSX
           headers:
             Location:
               schema:
                 type: string
                 format: uri
-        '500':
-          description: Aucune promotion pour cette année
 components:
   securitySchemes:
     bearerAuth:

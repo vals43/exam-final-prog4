@@ -15,7 +15,7 @@ Spring Boot 3.2.2 + PostgreSQL + JWT, déployée sur AWS via le template [Poja](
 - **Liste des diplômés XLSX** : triée par rang, téléchargeable directement (S3 pre-signed), pour chaque promotion.
 - **Interface Thymeleaf** : liste des promotions + bouton « Télécharger la liste des diplômés ».
 
-## Déploiement (préproduction)
+## Déploiement (preprod)
 
 ```
 https://ioc5c5l5twlvmdapgdfduhzrvq0ddbau.lambda-url.eu-west-3.on.aws
@@ -97,9 +97,4 @@ Intégration avec Testcontainers (PostgreSQL) + couverture JaCoCo (≥ 80 %).
 
 ## Documentation
 
-Voir `docs/` : `sujet.md`, `plan.md`, `architecture.md`, `modele-donnees.md`, `video-script.md`.
-
-## Projet réalisé en binôme
-
-- **A** : Spring Security + JWT, CRUD admin, relevés PDF → S3 → email async, UI Thymeleaf.
-- **B** : notes/historisation, calculs de moyennes, diplômés + rang, export XLSX, validation examens.
+Spécification OpenAPI : `doc/api.yml`.
