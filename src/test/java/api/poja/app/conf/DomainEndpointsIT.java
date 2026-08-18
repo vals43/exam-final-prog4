@@ -1,16 +1,22 @@
 package api.poja.app.conf;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import api.poja.app.endpoint.event.EventProducer;
+import api.poja.app.endpoint.event.model.SendEmailRequested;
+import api.poja.app.file.bucket.BucketComponent;
 import api.poja.app.model.Affectation;
 import api.poja.app.model.Cours;
 import api.poja.app.model.Examen;
 import api.poja.app.model.Groupe;
 import api.poja.app.model.Inscription;
+import api.poja.app.model.Parcours;
 import api.poja.app.model.ParcoursType;
 import api.poja.app.model.Role;
 import api.poja.app.model.User;
@@ -21,15 +27,18 @@ import api.poja.app.repository.GroupeRepository;
 import api.poja.app.repository.InscriptionRepository;
 import api.poja.app.repository.NoteHistoryRepository;
 import api.poja.app.repository.NoteRepository;
+import api.poja.app.repository.ParcoursRepository;
 import api.poja.app.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
@@ -60,6 +69,12 @@ public class DomainEndpointsIT extends BaseIT {
   @Autowired NoteRepository noteRepository;
 
   @Autowired NoteHistoryRepository noteHistoryRepository;
+
+  @Autowired ParcoursRepository parcoursRepository;
+
+  @MockBean BucketComponent bucketComponent;
+
+  @MockBean EventProducer<SendEmailRequested> eventProducer;
 
   private User admin;
   private User teacher;
@@ -109,6 +124,7 @@ public class DomainEndpointsIT extends BaseIT {
                 .role(Role.STUDENT)
                 .parcours(ParcoursType.EL)
                 .build());
+    var el = parcoursRepository.save(Parcours.builder().code(ParcoursType.EL).nom("EL").build());
     cours =
         coursRepository.save(
             Cours.builder()
@@ -116,11 +132,18 @@ public class DomainEndpointsIT extends BaseIT {
                 .intitule("Programmation 9")
                 .credits(6)
                 .semestre(1)
+                .parcours(List.of(el))
                 .build());
     var groupe = groupeRepository.save(Groupe.builder().ref("K9").annee(1).build());
     cours2 =
         coursRepository.save(
-            Cours.builder().ref("WEB9").intitule("Web 9").credits(6).semestre(1).build());
+            Cours.builder()
+                .ref("WEB9")
+                .intitule("Web 9")
+                .credits(6)
+                .semestre(2)
+                .parcours(List.of(el))
+                .build());
     examen =
         examenRepository.save(
             Examen.builder()
@@ -221,6 +244,21 @@ public class DomainEndpointsIT extends BaseIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gradeBody))
         .andExpect(status().isConflict());
+  }
+
+  @Test
+  void student_generates_own_releve() throws Exception {
+    mockMvc
+        .perform(get("/student/releves/1").with(user(student.getEmail()).roles("STUDENT")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.studentId").value(student.getId()))
+        .andExpect(jsonPath("$.std").value("STD-0001"))
+        .andExpect(jsonPath("$.annee").value(1))
+        .andExpect(jsonPath("$.mode").value("PROVISOIRE"))
+        .andExpect(jsonPath("$.lignes[0].coursRef").value("PROG9"));
+
+    verify(bucketComponent).upload(any(), any());
+    verify(eventProducer).accept(any());
   }
 
   @Test
