@@ -115,7 +115,12 @@ public class NoteServiceIT extends BaseIT {
     var note =
         noteService.grade(
             new NoteDto(
-                null, student.getId(), examen.getId(), inscription.getId(), new BigDecimal("15.5")),
+                null,
+                student.getId(),
+                examen.getId(),
+                inscription.getId(),
+                new BigDecimal("15.5"),
+                "Saisie initiale"),
             teacher);
 
     assertEquals(new BigDecimal("15.5"), note.getValeur());
@@ -132,7 +137,8 @@ public class NoteServiceIT extends BaseIT {
                 student.getId(),
                 examen.getId(),
                 inscription.getId(),
-                new BigDecimal("10.00")),
+                new BigDecimal("10.00"),
+                "Saisie initiale"),
             teacher);
 
     var second =
@@ -142,7 +148,8 @@ public class NoteServiceIT extends BaseIT {
                 student.getId(),
                 examen.getId(),
                 inscription.getId(),
-                new BigDecimal("17.00")),
+                new BigDecimal("17.00"),
+                "Réclamation de l'étudiant"),
             teacher);
 
     assertEquals(new BigDecimal("17.00"), second.getValeur());
@@ -152,6 +159,34 @@ public class NoteServiceIT extends BaseIT {
     assertEquals(0, new BigDecimal("10.00").compareTo(histories.get(0).getAncienneValeur()));
     assertEquals(0, new BigDecimal("17.00").compareTo(histories.get(0).getNouvelleValeur()));
     assertEquals(teacher.getId(), histories.get(0).getModifiePar().getId());
+    assertEquals("Réclamation de l'étudiant", histories.get(0).getRaison());
+  }
+
+  @Test
+  void grade_throws_when_raison_missing_on_update() {
+    var first =
+        noteService.grade(
+            new NoteDto(
+                null,
+                student.getId(),
+                examen.getId(),
+                inscription.getId(),
+                new BigDecimal("10.00"),
+                "Saisie initiale"),
+            teacher);
+
+    assertThrows(
+        ConflictException.class,
+        () ->
+            noteService.grade(
+                new NoteDto(
+                    first.getId(),
+                    student.getId(),
+                    examen.getId(),
+                    inscription.getId(),
+                    new BigDecimal("17.00"),
+                    null),
+                teacher));
   }
 
   @Test
@@ -163,7 +198,8 @@ public class NoteServiceIT extends BaseIT {
                 student.getId(),
                 examen.getId(),
                 inscription.getId(),
-                new BigDecimal("12.00")),
+                new BigDecimal("12.00"),
+                "Saisie initiale"),
             teacher);
 
     var second =
@@ -173,7 +209,8 @@ public class NoteServiceIT extends BaseIT {
                 student.getId(),
                 examen.getId(),
                 inscription.getId(),
-                new BigDecimal("12.00")),
+                new BigDecimal("12.00"),
+                "Correction sans changement"),
             teacher);
 
     assertEquals(0, noteHistoryRepository.findByNoteId(second.getId()).size());
@@ -201,7 +238,8 @@ public class NoteServiceIT extends BaseIT {
                     student.getId(),
                     examen.getId(),
                     inscription.getId(),
-                    new BigDecimal("14.00")),
+                    new BigDecimal("14.00"),
+                    "Saisie initiale"),
                 otherTeacher));
   }
 
@@ -226,11 +264,21 @@ public class NoteServiceIT extends BaseIT {
 
     noteService.grade(
         new NoteDto(
-            null, student.getId(), examen.getId(), inscription.getId(), new BigDecimal("10.00")),
+            null,
+            student.getId(),
+            examen.getId(),
+            inscription.getId(),
+            new BigDecimal("10.00"),
+            "Saisie initiale"),
         teacher);
     noteService.grade(
         new NoteDto(
-            null, student.getId(), examen2.getId(), inscription2.getId(), new BigDecimal("11.00")),
+            null,
+            student.getId(),
+            examen2.getId(),
+            inscription2.getId(),
+            new BigDecimal("11.00"),
+            "Saisie initiale"),
         teacher);
 
     var views = noteService.viewByStudentId(student.getId());

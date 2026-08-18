@@ -41,6 +41,9 @@ public class NoteHistory {
   @Column(nullable = false)
   private Instant dateModification;
 
+  @Column(nullable = false)
+  private String raison;
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "modifie_par_id", nullable = false)
   private User modifiePar;

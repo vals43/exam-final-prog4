@@ -47,6 +47,9 @@ public class NoteService {
 
   @Transactional
   public Note grade(NoteDto dto, User teacher) {
+    if (dto.raison() == null || dto.raison().isBlank()) {
+      throw new ConflictException("La raison de la modification est obligatoire");
+    }
     Examen examen =
         examenRepository
             .findById(dto.examenId())
@@ -62,7 +65,7 @@ public class NoteService {
 
     return noteRepository
         .findByStudentIdAndExamenId(dto.studentId(), dto.examenId())
-        .map(note -> updateNote(note, dto.valeur(), teacher))
+        .map(note -> updateNote(note, dto.valeur(), dto.raison(), teacher))
         .orElseGet(() -> createNote(dto, examen, inscription));
   }
 
@@ -80,7 +83,11 @@ public class NoteService {
   }
 
   @Transactional
-  public Note updateNote(Note note, java.math.BigDecimal nouvelleValeur, User teacher) {
+  public Note updateNote(
+      Note note, java.math.BigDecimal nouvelleValeur, String raison, User teacher) {
+    if (raison == null || raison.isBlank()) {
+      throw new ConflictException("La raison de la modification est obligatoire");
+    }
     if (note.getValeur().compareTo(nouvelleValeur) != 0) {
       noteHistoryRepository.save(
           NoteHistory.builder()
@@ -88,6 +95,7 @@ public class NoteService {
               .ancienneValeur(note.getValeur())
               .nouvelleValeur(nouvelleValeur)
               .dateModification(Instant.now())
+              .raison(raison)
               .modifiePar(teacher)
               .build());
       note.setValeur(nouvelleValeur);

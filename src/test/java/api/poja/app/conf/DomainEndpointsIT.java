@@ -176,7 +176,8 @@ public class DomainEndpointsIT extends BaseIT {
                 "studentId", student.getId(),
                 "examenId", examen.getId(),
                 "inscriptionId", inscription.getId(),
-                "valeur", 14.5));
+                "valeur", 14.5,
+                "raison", "Saisie initiale"));
     mockMvc
         .perform(
             post("/teacher/notes")
@@ -211,7 +212,8 @@ public class DomainEndpointsIT extends BaseIT {
                 "studentId", student.getId(),
                 "examenId", examen.getId(),
                 "inscriptionId", inscription.getId(),
-                "valeur", 14.5));
+                "valeur", 14.5,
+                "raison", "Saisie initiale"));
     mockMvc
         .perform(
             post("/teacher/notes")
