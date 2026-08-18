@@ -23,9 +23,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -39,12 +40,51 @@ import org.springframework.transaction.annotation.Transactional;
 @Profile("!test")
 @AllArgsConstructor
 public class SchoolDataSeeder implements CommandLineRunner {
-  private static final List<String> COURSE_REFS =
-      List.of(
-          "PROK1", "WEB1", "CQ1", "MATH1", "ANG1", "SYS1", "PROK2", "WEB2", "CQ2", "MATH2", "ANG2",
-          "SYS2", "PROK3", "WEB3", "MATH3", "CQ3", "PROBL3", "TN1", "ELEC1", "PROK4", "ELEC2",
-          "TN2", "TN3", "WEB4", "MATH4", "CQ4", "ANG4", "MOB4", "INC5", "DIST5", "ROUT5", "ADM5",
-          "CQ5", "WEB5", "ANG5", "MAG5", "PFE6");
+
+  private static final Map<String, List<BigDecimal>> REAL_NOTES_STD23107 =
+      Map.of(
+          "SYS1", List.of(new BigDecimal("12.50"), new BigDecimal("12.50")),
+          "PROG1", List.of(new BigDecimal("10.17"), new BigDecimal("10.17")),
+          "MGT1", List.of(new BigDecimal("17.50"), new BigDecimal("17.50")),
+          "DONNEES1", List.of(new BigDecimal("11.63"), new BigDecimal("11.63")),
+          "WEB1", List.of(new BigDecimal("14.33"), new BigDecimal("14.33")),
+          "SYS2",
+              List.of(new BigDecimal("3.33"), new BigDecimal("11.67"), new BigDecimal("15.00")));
+
+  private static final Map<String, List<BigDecimal>> REAL_NOTES_STD23108 =
+      Map.of(
+          "PROG1", List.of(new BigDecimal("11.83"), new BigDecimal("11.83")),
+          "DONNEES1", List.of(new BigDecimal("13.63"), new BigDecimal("13.63")),
+          "THEORIE1", List.of(new BigDecimal("18.50"), new BigDecimal("18.50")),
+          "WEB1", List.of(new BigDecimal("15.50"), new BigDecimal("15.50")));
+
+  private static final Map<String, List<BigDecimal>> REAL_NOTES_STD23111 =
+      Map.of(
+          "PROG1", List.of(new BigDecimal("15.33"), new BigDecimal("15.33")),
+          "DONNEES1", List.of(new BigDecimal("17.75"), new BigDecimal("17.75")),
+          "WEB1", List.of(new BigDecimal("17.83"), new BigDecimal("17.83")));
+
+  private static final Map<String, List<BigDecimal>> REAL_NOTES_STD23112 =
+      Map.of(
+          "PROG1", List.of(new BigDecimal("7.33"), new BigDecimal("7.33")),
+          "DONNEES1", List.of(new BigDecimal("9.25"), new BigDecimal("9.25")),
+          "WEB1", List.of(new BigDecimal("9.33"), new BigDecimal("9.33")));
+
+  private static final Map<String, List<BigDecimal>> REAL_NOTES_STD23113 =
+      Map.of("PROG1", List.of(new BigDecimal("6.33"), new BigDecimal("6.33")));
+
+  private static final Map<String, Map<String, List<BigDecimal>>> REAL_NOTES =
+      Map.of(
+          "STD23107", REAL_NOTES_STD23107,
+          "STD23108", REAL_NOTES_STD23108,
+          "STD23111", REAL_NOTES_STD23111,
+          "STD23112", REAL_NOTES_STD23112,
+          "STD23113", REAL_NOTES_STD23113);
+
+  private static final List<String> REUSSITE_STDS =
+      List.of("STD21001", "STD22001", "STD23107", "STD23108", "STD23111");
+  private static final List<String> ECHEC_STDS =
+      List.of("STD21004", "STD22004", "STD23112", "STD23113");
 
   private final ParcoursRepository parcoursRepository;
   private final CoursRepository coursRepository;
@@ -74,84 +114,143 @@ public class SchoolDataSeeder implements CommandLineRunner {
     var k4 = newGroupe("K4", 3);
     groupeRepository.saveAll(List.of(k1, k2, k3, k4));
 
-    var admin = newUser("ADM00", "Admin", "System", "admin@hei.edu", Role.ADMIN, null);
-    var manitra = newUser(null, "Ramaniraka", "Manitra", "manitra@hei.edu", Role.TEACHER, null);
-    var lova = newUser(null, "Andrianina", "Lova", "lova@hei.edu", Role.TEACHER, null);
-    var alice =
-        newUser("STD101", "Randria", "Alice", "alice@hei.edu", Role.STUDENT, ParcoursType.EL);
-    var bob = newUser("STD102", "Rakoto", "Bob", "bob@hei.edu", Role.STUDENT, ParcoursType.EL);
-    var charly =
-        newUser("STD103", "Andria", "Charly", "charly@hei.edu", Role.STUDENT, ParcoursType.TN);
-    var david =
-        newUser("STD104", "Rasoanaivo", "David", "david@hei.edu", Role.STUDENT, ParcoursType.EL);
-    var emma =
-        newUser("STD105", "Razafindrakoto", "Emma", "emma@hei.edu", Role.STUDENT, ParcoursType.TN);
-    userRepository.saveAll(List.of(admin, manitra, lova, alice, bob, charly, david, emma));
+    var admin = newUser("ADM00", "Admin", "System", "admin@hei.edu", Role.ADMIN, null, null);
+    var manitra =
+        newUser(null, "Ramaniraka", "Manitra", "manitra@hei.edu", Role.TEACHER, null, null);
+    var lova = newUser(null, "Andrianina", "Lova", "lova@hei.edu", Role.TEACHER, null, null);
+
+    var fanjasoa =
+        newUser(
+            "STD21001",
+            "ANDRIAMANJAKA",
+            "Fanjasoa",
+            "fanjasoa@hei.edu",
+            Role.STUDENT,
+            ParcoursType.EL,
+            2021);
+    var mihary =
+        newUser(
+            "STD21004",
+            "ANDRIAMILANTO",
+            "Mihary Joël",
+            "mihary@hei.edu",
+            Role.STUDENT,
+            ParcoursType.TN,
+            2021);
+    var loiqua =
+        newUser(
+            "STD22001",
+            "ANDRIAMAHALY ARINIAINA",
+            "Barthélemy Loiqua",
+            "loiqua@hei.edu",
+            Role.STUDENT,
+            ParcoursType.EL,
+            2022);
+    var joachim =
+        newUser(
+            "STD22004",
+            "ANDRIAMASINORO",
+            "Jean Joachim",
+            "joachim@hei.edu",
+            Role.STUDENT,
+            ParcoursType.TN,
+            2022);
+    var ninah =
+        newUser(
+            "STD23107",
+            "HANTANIRINA",
+            "Ninah",
+            "ninah@hei.edu",
+            Role.STUDENT,
+            ParcoursType.EL,
+            2023);
+    var fanhasina =
+        newUser(
+            "STD23108",
+            "RAKOTOARISOA",
+            "Ny Herimanankasina Fanhasina",
+            "fanhasina@hei.edu",
+            Role.STUDENT,
+            ParcoursType.TN,
+            2023);
+    var nicolas =
+        newUser(
+            "STD23111",
+            "RANDRIANARIVONY",
+            "Aro Nicolas",
+            "nicolas@hei.edu",
+            Role.STUDENT,
+            ParcoursType.EL,
+            2023);
+    var jessica =
+        newUser(
+            "STD23112",
+            "RANDRIAMANDIMBY",
+            "Hasiniaina Jessica",
+            "jessica@hei.edu",
+            Role.STUDENT,
+            ParcoursType.TN,
+            2023);
+    var christophe =
+        newUser(
+            "STD23113",
+            "MERCI LEONARDO",
+            "Christophe Muriel's",
+            "christophe@hei.edu",
+            Role.STUDENT,
+            ParcoursType.EL,
+            2023);
+    var students =
+        List.of(fanjasoa, mihary, loiqua, joachim, ninah, fanhasina, nicolas, jessica, christophe);
+    userRepository.saveAll(
+        List.of(
+            admin,
+            manitra,
+            lova,
+            fanjasoa,
+            mihary,
+            loiqua,
+            joachim,
+            ninah,
+            fanhasina,
+            nicolas,
+            jessica,
+            christophe));
 
     var coursByRef = createCourses(el, tn);
 
-    // Mobilité de groupes : Alice K1 -> K3 -> K4, Bob K2 -> K3 -> K4, Charly K2 -> K3 -> K4
-    var inscriptions =
-        new ArrayList<>(
-            List.of(
-                newInscription(alice, k1, 1, 1),
-                newInscription(alice, k1, 2, 1),
-                newInscription(alice, k3, 3, 2),
-                newInscription(alice, k3, 4, 2),
-                newInscription(alice, k4, 5, 3),
-                newInscription(alice, k4, 6, 3),
-                newInscription(bob, k2, 1, 1),
-                newInscription(bob, k2, 2, 1),
-                newInscription(bob, k3, 3, 2),
-                newInscription(bob, k3, 4, 2),
-                newInscription(bob, k4, 5, 3),
-                newInscription(bob, k4, 6, 3),
-                newInscription(charly, k2, 1, 1),
-                newInscription(charly, k2, 2, 1),
-                newInscription(charly, k3, 3, 2),
-                newInscription(charly, k3, 4, 2),
-                newInscription(charly, k4, 5, 3),
-                newInscription(charly, k4, 6, 3),
-                newInscription(david, k1, 1, 1),
-                newInscription(david, k1, 2, 1),
-                newInscription(david, k3, 3, 2),
-                newInscription(david, k3, 4, 2),
-                newInscription(david, k4, 5, 3),
-                newInscription(david, k4, 6, 3),
-                newInscription(emma, k2, 1, 1),
-                newInscription(emma, k2, 2, 1),
-                newInscription(emma, k3, 3, 2),
-                newInscription(emma, k3, 4, 2),
-                newInscription(emma, k4, 5, 3),
-                newInscription(emma, k4, 6, 3)));
+    var inscriptions = new ArrayList<Inscription>();
+    for (User student : students) {
+      Groupe annee1 = student.getParcours() == ParcoursType.EL ? k1 : k2;
+      inscriptions.addAll(
+          List.of(
+              newInscription(student, annee1, 1, 1),
+              newInscription(student, annee1, 2, 1),
+              newInscription(student, k3, 3, 2),
+              newInscription(student, k3, 4, 2),
+              newInscription(student, k4, 5, 3),
+              newInscription(student, k4, 6, 3)));
+    }
     inscriptionRepository.saveAll(inscriptions);
 
     createExams(coursByRef, 2024, 1);
     createExams(coursByRef, 2025, 3);
     createExams(coursByRef, 2026, 5);
 
-    affectationRepository.saveAll(
-        List.of(
-            newAffectation(coursByRef.get("PROK1"), k1, manitra, 1),
-            newAffectation(coursByRef.get("PROK1"), k2, manitra, 1),
-            newAffectation(coursByRef.get("WEB1"), k1, lova, 1),
-            newAffectation(coursByRef.get("WEB1"), k2, lova, 1),
-            newAffectation(coursByRef.get("MATH1"), k1, manitra, 1),
-            newAffectation(coursByRef.get("MATH1"), k2, manitra, 1),
-            newAffectation(coursByRef.get("ELEC1"), k1, lova, 1),
-            newAffectation(coursByRef.get("TN1"), k2, manitra, 1),
-            newAffectation(coursByRef.get("PROK3"), k3, manitra, 2),
-            newAffectation(coursByRef.get("WEB3"), k3, lova, 2),
-            newAffectation(coursByRef.get("MATH3"), k3, manitra, 2),
-            newAffectation(coursByRef.get("TN1"), k3, manitra, 2),
-            newAffectation(coursByRef.get("ELEC1"), k3, lova, 2),
-            newAffectation(coursByRef.get("PROK4"), k4, manitra, 3),
-            newAffectation(coursByRef.get("WEB4"), k4, lova, 3),
-            newAffectation(coursByRef.get("MATH4"), k4, manitra, 3),
-            newAffectation(coursByRef.get("TN2"), k4, manitra, 3),
-            newAffectation(coursByRef.get("ELEC2"), k4, lova, 3)));
+    var groupsByAnnee = Map.of(1, List.of(k1, k2), 2, List.of(k3), 3, List.of(k4));
+    var affectations = new ArrayList<Affectation>();
+    int index = 0;
+    for (Cours cours : coursByRef.values()) {
+      int annee = (cours.getSemestre() + 1) / 2;
+      for (Groupe groupe : groupsByAnnee.get(annee)) {
+        User teacher = index % 2 == 0 ? manitra : lova;
+        affectations.add(newAffectation(cours, groupe, teacher, annee));
+        index++;
+      }
+    }
+    affectationRepository.saveAll(affectations);
 
-    seedNotes(List.of(alice, bob, charly, david, emma), inscriptions, coursByRef);
+    seedNotes(students, inscriptions, coursByRef);
 
     log.info(
         "Seed terminé : {} cours, {} examens, {} groupes, {} affectations, {} inscriptions, {}"
@@ -165,9 +264,7 @@ public class SchoolDataSeeder implements CommandLineRunner {
   }
 
   private void seedNotes(
-      List<User> students,
-      List<Inscription> inscriptions,
-      java.util.Map<String, Cours> coursByRef) {
+      List<User> students, List<Inscription> inscriptions, Map<String, Cours> coursByRef) {
     var notes = new ArrayList<Note>();
     for (User student : students) {
       var studentInscriptions =
@@ -175,20 +272,19 @@ public class SchoolDataSeeder implements CommandLineRunner {
               .filter(i -> i.getStudent().getId().equals(student.getId()))
               .toList();
       for (Cours cours : coursByRef.values()) {
-        if (!coursBelongsTo(cours, student.getParcours())) {
-          continue;
-        }
-        for (Examen examen : examenRepository.findByCoursId(cours.getId())) {
+        var examens = examensOrdonnes(cours);
+        for (int i = 0; i < examens.size(); i++) {
+          var examen = examens.get(i);
           var semestre = cours.getSemestre();
-          if (studentInscriptions.stream().noneMatch(i -> i.getSemestre().equals(semestre))) {
+          if (studentInscriptions.stream().noneMatch(ins -> ins.getSemestre().equals(semestre))) {
             continue;
           }
           Inscription inscription =
               studentInscriptions.stream()
-                  .filter(i -> i.getSemestre().equals(semestre))
+                  .filter(ins -> ins.getSemestre().equals(semestre))
                   .findFirst()
                   .orElseThrow();
-          var valeur = noteValue(student, cours, examen);
+          var valeur = noteValue(student, cours, i);
           notes.add(
               Note.builder()
                   .student(student)
@@ -204,32 +300,31 @@ public class SchoolDataSeeder implements CommandLineRunner {
     noteRepository.saveAll(notes);
   }
 
-  private boolean coursBelongsTo(Cours cours, ParcoursType parcours) {
-    return cours.getParcours() != null
-        && cours.getParcours().stream().anyMatch(p -> p.getCode() == parcours);
+  private List<Examen> examensOrdonnes(Cours cours) {
+    return examenRepository.findByCoursId(cours.getId()).stream()
+        .sorted(Comparator.comparing(Examen::getDate))
+        .toList();
   }
 
-  private static final Set<String> REUSSITE_STDS = Set.of("STD102", "STD104", "STD105");
-  private static final Set<String> ECHEC_STDS = Set.of("STD101", "STD103");
-
-  private BigDecimal noteValue(User student, Cours cours, Examen examen) {
+  private BigDecimal noteValue(User student, Cours cours, int examenIndex) {
+    var realNotes = REAL_NOTES.get(student.getStd());
+    if (realNotes != null && realNotes.containsKey(cours.getRef())) {
+      var valeurs = realNotes.get(cours.getRef());
+      if (examenIndex >= 0 && examenIndex < valeurs.size()) {
+        return valeurs.get(examenIndex);
+      }
+    }
     if (REUSSITE_STDS.contains(student.getStd())) {
-      var seed =
-          student.getStd().hashCode() * 31
-              + cours.getRef().hashCode() * 7
-              + examen.getCoefficient().hashCode();
+      var seed = student.getStd().hashCode() * 31 + cours.getRef().hashCode() * 7;
       var hash = Math.floorMod(seed, 100);
       // réussite garantie : note entre 11 et 19
       return BigDecimal.valueOf(11 + hash % 9).setScale(2);
     }
-    if (ECHEC_STDS.contains(student.getStd()) && cours.getRef().equals("MATH1")) {
+    if (ECHEC_STDS.contains(student.getStd()) && cours.getRef().equals("PROG1")) {
       // échec garanti sur au moins un cours pour rendre la liste des diplômés significative
       return new BigDecimal("5.00");
     }
-    var seed =
-        student.getId().hashCode() * 31
-            + cours.getRef().hashCode() * 7
-            + examen.getCoefficient().hashCode();
+    var seed = student.getId().hashCode() * 31 + cours.getRef().hashCode() * 7;
     var hash = Math.floorMod(seed, 100);
     // valeurs réalistes entre 5 et 19, avec une petite probabilité d'échec (< 10)
     var base = 5 + hash % 15;
@@ -248,7 +343,13 @@ public class SchoolDataSeeder implements CommandLineRunner {
   }
 
   private User newUser(
-      String std, String nom, String prenom, String email, Role role, ParcoursType parcours) {
+      String std,
+      String nom,
+      String prenom,
+      String email,
+      Role role,
+      ParcoursType parcours,
+      Integer promotion) {
     return User.builder()
         .std(std)
         .nom(nom)
@@ -257,6 +358,7 @@ public class SchoolDataSeeder implements CommandLineRunner {
         .password(passwordEncoder.encode("password123"))
         .role(role)
         .parcours(parcours)
+        .promotion(promotion)
         .build();
   }
 
@@ -273,48 +375,37 @@ public class SchoolDataSeeder implements CommandLineRunner {
     return Affectation.builder().cours(cours).groupe(groupe).teacher(teacher).annee(annee).build();
   }
 
-  private java.util.Map<String, Cours> createCourses(Parcours el, Parcours tn) {
+  private Map<String, Cours> createCourses(Parcours el, Parcours tn) {
     var common = List.of(el, tn);
     var cours =
         coursRepository.saveAll(
             List.of(
-                cours("PROK1", "Programmation 1", 6, 1, common),
+                cours("PROG1", "Programmation 1", 6, 1, common),
                 cours("WEB1", "Web 1", 6, 1, common),
-                cours("CQ1", "Conduite de Projet 1", 4, 1, common),
-                cours("MATH1", "Mathématiques 1", 7, 1, common),
-                cours("ANG1", "Anglais 1", 3, 1, common),
-                cours("SYS1", "Systèmes et Réseaux 1", 4, 1, common),
-                cours("PROK2", "Programmation 2", 6, 2, common),
-                cours("WEB2", "Web 2", 6, 2, common),
-                cours("CQ2", "Conduite de Projet 2", 4, 2, common),
-                cours("MATH2", "Mathématiques 2", 7, 2, common),
-                cours("ANG2", "Anglais 2", 3, 2, common),
-                cours("SYS2", "Systèmes et Réseaux 2", 4, 2, common),
-                cours("PROK3", "Programmation 3", 6, 3, common),
-                cours("WEB3", "Web 3", 6, 3, common),
-                cours("MATH3", "Mathématiques 3", 6, 3, common),
-                cours("CQ3", "Conduite de Projet 3", 4, 3, common),
-                cours("PROBL3", "Problématique 3", 3, 3, common),
-                cours("TN1", "Réseaux TN 1", 5, 3, List.of(tn)),
-                cours("ELEC1", "Électronique EL 1", 5, 3, List.of(el)),
-                cours("PROK4", "Programmation 4", 6, 4, List.of(el)),
-                cours("ELEC2", "Électronique EL 2", 6, 4, List.of(el)),
-                cours("TN2", "Réseaux TN 2", 6, 4, List.of(tn)),
-                cours("TN3", "Télécommunications TN", 6, 4, List.of(tn)),
-                cours("WEB4", "Web 4", 6, 4, common),
-                cours("MATH4", "Mathématiques 4", 4, 4, common),
-                cours("CQ4", "Conduite de Projet 4", 4, 4, common),
-                cours("ANG4", "Anglais 4", 2, 4, common),
-                cours("MOB4", "Mobile 4", 2, 4, common),
-                cours("INC5", "Intégration EL", 8, 5, List.of(el)),
-                cours("DIST5", "Systèmes distribués", 7, 5, List.of(el)),
-                cours("ROUT5", "Routage TN", 8, 5, List.of(tn)),
-                cours("ADM5", "Administration TN", 7, 5, List.of(tn)),
-                cours("CQ5", "Conduite de Projet 5", 4, 5, common),
-                cours("WEB5", "Web 5", 5, 5, common),
-                cours("ANG5", "Anglais 5", 3, 5, common),
-                cours("MAG5", "Management", 3, 5, common),
-                cours("PFE6", "Projet de fin d'études", 30, 6, common)));
+                cours("THEORIE1", "Théorie 1", 6, 1, common),
+                cours("SYS1", "Systèmes et Réseaux 1", 6, 1, common),
+                cours("MGT1", "Management 1", 4, 1, common),
+                cours("LANGUES1", "Langues Vivantes 1", 4, 1, common),
+                cours("PROG2", "Programmation 2", 6, 2, common),
+                cours("DONNEES1", "Données 1", 4, 2, common),
+                cours("SYS2", "Systèmes et Réseaux 2", 8, 2, common),
+                cours("EL1", "Électronique 1", 10, 2, common),
+                cours("WEB2", "Web 2", 9, 3, common),
+                cours("SYS3", "Systèmes et Réseaux 3", 3, 3, common),
+                cours("PROG3", "Programmation 3", 6, 3, common),
+                cours("MGT2", "Management 2", 4, 3, common),
+                cours("PROG4", "Programmation 4", 6, 3, common),
+                cours("PROJET1", "Projet 1", 18, 4, common),
+                cours("LV2", "Langues Vivantes 2", 4, 4, common),
+                cours("DONNEES2", "Données 2", 5, 4, common),
+                cours("IA1", "Intelligence Artificielle 1", 5, 4, common),
+                cours("SECU1", "Sécurité 1", 6, 5, common),
+                cours("SECU2", "Sécurité 2", 4, 5, common),
+                cours("SECU3", "Sécurité 3", 6, 5, common),
+                cours("PRO3", "Projet 3", 3, 5, common),
+                cours("SECU4", "Sécurité 4", 4, 6, common),
+                cours("PRO4", "Projet 4", 30, 6, common),
+                cours("PROG5", "Programmation 5", 7, 6, common)));
     var byRef = new HashMap<String, Cours>();
     cours.forEach(c -> byRef.put(c.getRef(), c));
     return byRef;
@@ -331,15 +422,21 @@ public class SchoolDataSeeder implements CommandLineRunner {
         .build();
   }
 
-  private void createExams(java.util.Map<String, Cours> coursByRef, int annee, int semestreDebut) {
+  private void createExams(Map<String, Cours> coursByRef, int annee, int semestreDebut) {
     var examens = new ArrayList<Examen>();
     coursByRef
         .values()
         .forEach(
             c -> {
               if (c.getSemestre() >= semestreDebut && c.getSemestre() < semestreDebut + 2) {
-                examens.add(examen(c, annee, 1, new BigDecimal("0.4")));
-                examens.add(examen(c, annee, 2, new BigDecimal("0.6")));
+                if (c.getRef().equals("SYS2")) {
+                  examens.add(examen(c, annee, 1, new BigDecimal("0.3")));
+                  examens.add(examen(c, annee, 2, new BigDecimal("0.3")));
+                  examens.add(examen(c, annee, 3, new BigDecimal("0.4")));
+                } else {
+                  examens.add(examen(c, annee, 1, new BigDecimal("0.4")));
+                  examens.add(examen(c, annee, 2, new BigDecimal("0.6")));
+                }
               }
             });
     examenRepository.saveAll(examens);
@@ -347,7 +444,12 @@ public class SchoolDataSeeder implements CommandLineRunner {
 
   private Examen examen(Cours cours, int annee, int numero, BigDecimal coefficient) {
     var start =
-        LocalDateTime.of(annee, cours.getSemestre() <= 2 ? 1 : 9, numero == 1 ? 15 : 16, 9, 0);
+        LocalDateTime.of(
+            annee,
+            cours.getSemestre() <= 2 ? 1 : 9,
+            numero == 1 ? 15 : numero == 2 ? 16 : 17,
+            9,
+            0);
     return Examen.builder()
         .cours(cours)
         .date(start.toInstant(ZoneOffset.UTC))

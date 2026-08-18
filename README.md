@@ -38,13 +38,18 @@ export SPRING_DATASOURCE_URL=<postgres-url>
 |-------|------|--------------|
 | admin@hei.edu | ADMIN | password123 |
 | manitra@hei.edu | TEACHER | password123 |
-| alice@hei.edu | STUDENT (EL) | password123 |
-| bob@hei.edu | STUDENT (EL) | password123 |
-| charly@hei.edu | STUDENT (TN) | password123 |
-| david@hei.edu | STUDENT (EL) | password123 |
-| emma@hei.edu | STUDENT (TN) | password123 |
+| lova@hei.edu | TEACHER | password123 |
+| fanjasoa@hei.edu | STUDENT (EL) — promo 2021 (G) | password123 |
+| mihary@hei.edu | STUDENT (TN) — promo 2021 (G) | password123 |
+| loiqua@hei.edu | STUDENT (EL) — promo 2022 (H) | password123 |
+| joachim@hei.edu | STUDENT (TN) — promo 2022 (H) | password123 |
+| ninah@hei.edu | STUDENT (EL) — promo 2023 (J) | password123 |
+| fanhasina@hei.edu | STUDENT (TN) — promo 2023 (J) | password123 |
+| nicolas@hei.edu | STUDENT (EL) — promo 2023 (J) | password123 |
+| jessica@hei.edu | STUDENT (TN) — promo 2023 (J) | password123 |
+| christophe@hei.edu | STUDENT (EL) — promo 2023 (J) | password123 |
 
-Le seed charge 3 ans de cours/examens (30 crédits/semestre, 60/an), des affectations, des inscriptions avec changements de groupe (K1→K3→K4) et des notes réalistes. Parmi les étudiants, 3 sont diplômés (Bob, David, Emma) et 2 échouent (Alice, Charly).
+Le seed charge 3 cohortes réelles HEI (promotions G/H/J = 2021/2022/2023) avec 3 ans de cours/examens (référentiels réels L1-L3, 60 crédits/an), des affectations par cours × groupe × année, des inscriptions avec changement de groupe (K1/K2 → K3 → K4) et des notes réalistes. Parmi les étudiants, 5 sont diplômés (Fanjasoa, Loiqua, Ninah, Fanhasina, Nicolas) et 4 échouent (Mihary, Joachim, Jessica, Christophe).
 
 ## API principales
 
@@ -52,6 +57,8 @@ Le seed charge 3 ans de cours/examens (30 crédits/semestre, 60/an), des affecta
 |---------|----------|------|
 | POST | `/login` | public |
 | GET | `/student/notes` | STUDENT |
+| GET | `/student/releves/{annee}?mode=PROVISOIRE\|COMPLET` | STUDENT |
+| GET | `/teacher/notes` | TEACHER |
 | POST | `/teacher/notes` | TEACHER |
 | GET | `/teacher/affectations` | TEACHER |
 | GET | `/admin/users?role=` | ADMIN |
