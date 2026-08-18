@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+  <head th:fragment="head(title)">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title} + ' — HEI'">HEI</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+  </head>
+  <body>
+    <nav th:fragment="navbar" class="navbar">
+      <div class="navbar-inner">
+        <a class="navbar-brand" th:href="@{/home}">
+          <span class="brand-logo">HEI</span>
+          <span>Gestion des diplômés</span>
+        </a>
+        <div class="nav-links">
+          <a
+            sec:authorize="hasRole('ADMIN')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/admin/ui') ? ' active' : ''}"
+            th:href="@{/admin/ui}"
+            >Tableau de bord</a
+          >
+          <a
+            sec:authorize="hasRole('ADMIN')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/admin/ui/cours') ? ' active' : ''}"
+            th:href="@{/admin/ui/cours}"
+            >Cours</a
+          >
+          <a
+            sec:authorize="hasRole('ADMIN')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/admin/ui/examens') ? ' active' : ''}"
+            th:href="@{/admin/ui/examens}"
+            >Examens</a
+          >
+          <a
+            sec:authorize="hasRole('ADMIN')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/admin/ui/affectations') ? ' active' : ''}"
+            th:href="@{/admin/ui/affectations}"
+            >Affectations</a
+          >
+          <a
+            sec:authorize="hasRole('ADMIN')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/admin/ui/users') ? ' active' : ''}"
+            th:href="@{/admin/ui/users}"
+            >Utilisateurs</a
+          >
+          <a
+            sec:authorize="hasRole('ADMIN')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/admin/ui/releves') ? ' active' : ''}"
+            th:href="@{/admin/ui/releves}"
+            >Relevés</a
+          >
+          <a
+            sec:authorize="hasAnyRole('ADMIN','TEACHER')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/promotions') ? ' active' : ''}"
+            th:href="@{/promotions}"
+            >Promotions</a
+          >
+          <a
+            sec:authorize="hasRole('TEACHER')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/teacher/ui/affectations') ? ' active' : ''}"
+            th:href="@{/teacher/ui/affectations}"
+            >Mes affectations</a
+          >
+          <a
+            sec:authorize="hasRole('TEACHER')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/teacher/ui/notes') ? ' active' : ''}"
+            th:href="@{/teacher/ui/notes}"
+            >Mes notes</a
+          >
+          <a
+            sec:authorize="hasRole('STUDENT')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/student/ui/notes') ? ' active' : ''}"
+            th:href="@{/student/ui/notes}"
+            >Mes notes</a
+          >
+          <a
+            sec:authorize="hasRole('STUDENT')"
+            class="nav-link"
+            th:classappend="${#request.requestURI.startsWith('/student/ui/releves') ? ' active' : ''}"
+            th:href="@{/student/ui/releves}"
+            >Mes relevés</a
+          >
+        </div>
+        <div class="nav-right">
+          <div class="nav-user" th:if="${currentUser != null}">
+            <strong th:text="${currentUser.prenom} + ' ' + ${currentUser.nom}">Utilisateur</strong>
+            <span th:text="${currentUser.role}">Role</span>
+          </div>
+          <a class="nav-logout" th:href="@{/logout}">Déconnexion</a>
+        </div>
+      </div>
+    </nav>
+  </body>
+</html>
