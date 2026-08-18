@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connexion — HEI</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" href="/css/app.css" />
+  </head>
+  <body class="auth-page">
+    <main class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-logo">HEI</div>
+        <h1>Gestion des diplômés</h1>
+        <p class="auth-subtitle">Connectez-vous pour accéder à votre espace</p>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+
+      <form th:action="@{/ui/login}" method="post" class="auth-form">
+        <div class="field">
+          <label for="email">Adresse email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            th:value="${email}"
+            placeholder="vous@hei.edu"
+            required
+            autofocus
+          />
+        </div>
+        <div class="field">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+      </form>
+
+      <div class="auth-hint">
+        <p>Comptes de démonstration :</p>
+        <ul>
+          <li>admin@hei.edu (Admin)</li>
+          <li>manitra@hei.edu / lova@hei.edu (Enseignants)</li>
+          <li>ninah@hei.edu, fanhasina@hei.edu … (Étudiants)</li>
+        </ul>
+        <p class="auth-password">Mot de passe commun : <code>password123</code></p>
+      </div>
+    </main>
+  </body>
+</html>

@@ -2,6 +2,7 @@ package api.poja.app.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,16 +22,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
 
+  private static final String AUTH_COOKIE = "AUTH_TOKEN";
+
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    String authorizationHeader = request.getHeader("Authorization");
-    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+    String token = extractToken(request);
+    if (token == null) {
       filterChain.doFilter(request, response);
       return;
     }
-    String token = authorizationHeader.substring(7);
     try {
       String username = jwtService.extractUsername(token);
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -47,5 +49,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       SecurityContextHolder.clearContext();
     }
     filterChain.doFilter(request, response);
+  }
+
+  private String extractToken(HttpServletRequest request) {
+    String authorizationHeader = request.getHeader("Authorization");
+    if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+      return authorizationHeader.substring(7);
+    }
+    Cookie[] cookies = request.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if (AUTH_COOKIE.equals(cookie.getName()) && cookie.getValue() != null) {
+          return cookie.getValue();
+        }
+      }
+    }
+    return null;
   }
 }
