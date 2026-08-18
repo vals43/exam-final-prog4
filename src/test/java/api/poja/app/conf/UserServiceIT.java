@@ -36,7 +36,14 @@ public class UserServiceIT extends BaseIT {
   void create_encodes_default_password_and_keeps_std() {
     var dto =
         new UserDto(
-            null, "STD-0001", "Doe", "John", "john@hei.school", Role.STUDENT, ParcoursType.EL);
+            null,
+            "STD-0001",
+            "Doe",
+            "John",
+            "john@hei.school",
+            Role.STUDENT,
+            ParcoursType.EL,
+            null);
 
     var created = userService.create(dto);
 
@@ -48,7 +55,8 @@ public class UserServiceIT extends BaseIT {
 
   @Test
   void create_throws_when_email_already_used() {
-    var dto = new UserDto(null, "STD-0001", "Doe", "John", "dup@hei.school", Role.TEACHER, null);
+    var dto =
+        new UserDto(null, "STD-0001", "Doe", "John", "dup@hei.school", Role.TEACHER, null, null);
     userService.create(dto);
 
     assertThrows(
@@ -56,7 +64,7 @@ public class UserServiceIT extends BaseIT {
         () ->
             userService.create(
                 new UserDto(
-                    null, "STD-0002", "Doe", "Jane", "dup@hei.school", Role.TEACHER, null)));
+                    null, "STD-0002", "Doe", "Jane", "dup@hei.school", Role.TEACHER, null, null)));
   }
 
   @Test
@@ -65,7 +73,8 @@ public class UserServiceIT extends BaseIT {
         IllegalArgumentException.class,
         () ->
             userService.create(
-                new UserDto(null, "STD-0001", "Doe", "John", "p@hei.school", Role.STUDENT, null)));
+                new UserDto(
+                    null, "STD-0001", "Doe", "John", "p@hei.school", Role.STUDENT, null, null)));
   }
 
   @Test
@@ -86,7 +95,7 @@ public class UserServiceIT extends BaseIT {
         userService.update(
             original.getId(),
             new UserDto(
-                null, null, "Doe", "Jane", "new@hei.school", Role.STUDENT, ParcoursType.TN));
+                null, null, "Doe", "Jane", "new@hei.school", Role.STUDENT, ParcoursType.TN, null));
 
     assertEquals(original.getId(), updated.getId());
     assertEquals("STD-0001", updated.getStd());

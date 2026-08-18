@@ -48,4 +48,6 @@ public class User {
 
   @Enumerated(EnumType.STRING)
   private ParcoursType parcours;
+
+  @Column private Integer promotion;
 }

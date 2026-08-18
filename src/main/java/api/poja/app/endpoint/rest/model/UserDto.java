@@ -13,4 +13,5 @@ public record UserDto(
     @NotBlank String prenom,
     @NotBlank @Email String email,
     @NotNull Role role,
-    ParcoursType parcours) {}
+    ParcoursType parcours,
+    Integer promotion) {}

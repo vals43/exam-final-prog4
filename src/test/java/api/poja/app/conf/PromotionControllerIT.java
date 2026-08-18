@@ -65,6 +65,7 @@ public class PromotionControllerIT extends BaseIT {
                 .password("x")
                 .role(Role.STUDENT)
                 .parcours(ParcoursType.EL)
+                .promotion(2023)
                 .build());
     inscriptionRepository.save(
         Inscription.builder().student(student).groupe(groupe).semestre(1).annee(1).build());
@@ -96,11 +97,11 @@ public class PromotionControllerIT extends BaseIT {
 
   @Test
   void admin_downloads_diplomes_via_redirect() throws Exception {
-    var url = new URL("https://bucket.example/diplomes/promo-1.xlsx");
-    when(diplomeService.genererListeDiplomes(1)).thenReturn(url);
+    var url = new URL("https://bucket.example/diplomes/promo-2023.xlsx");
+    when(diplomeService.genererListeDiplomes(2023)).thenReturn(url);
 
     mockMvc
-        .perform(get("/promotions/1/diplomes").with(user("admin@hei.school").roles("ADMIN")))
+        .perform(get("/promotions/2023/diplomes").with(user("admin@hei.school").roles("ADMIN")))
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl(url.toExternalForm()));
   }
@@ -108,7 +109,7 @@ public class PromotionControllerIT extends BaseIT {
   @Test
   void teacher_cannot_download_diplomes() throws Exception {
     mockMvc
-        .perform(get("/promotions/1/diplomes").with(user("t@hei.school").roles("TEACHER")))
+        .perform(get("/promotions/2023/diplomes").with(user("t@hei.school").roles("TEACHER")))
         .andExpect(status().isForbidden());
   }
 

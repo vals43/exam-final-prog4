@@ -108,7 +108,7 @@ public class DiplomeServiceIT extends BaseIT {
 
   @Test
   void diplomes_lists_only_full_parcours_passed_students_ranked() {
-    var diplomes = diplomeService.diplomes(1);
+    var diplomes = diplomeService.diplomes(2023);
 
     assertEquals(2, diplomes.size());
     assertEquals("STD-EL1", diplomes.get(0).std());
@@ -120,11 +120,18 @@ public class DiplomeServiceIT extends BaseIT {
   }
 
   @Test
+  void diplomes_filters_by_promotion() {
+    var diplomes = diplomeService.diplomes(2022);
+
+    assertEquals(0, diplomes.size());
+  }
+
+  @Test
   void diplomes_filters_parcours_strictly() {
     // Alice (EL) has no note on the TN-only course yet graduates:
     // the TN course must never appear in an EL parcours.
     // Charly (TN) has no note on EL courses yet graduates too.
-    var diplomes = diplomeService.diplomes(1);
+    var diplomes = diplomeService.diplomes(2023);
 
     assertEquals(2, diplomes.size());
     assertEquals(List.of("STD-EL1", "STD-TN1"), diplomes.stream().map(DiplomeDto::std).toList());
@@ -132,13 +139,13 @@ public class DiplomeServiceIT extends BaseIT {
 
   @Test
   void genererListeDiplomes_uploads_xlsx_and_returns_presigned_url() throws Exception {
-    var presigned = new URL("https://bucket.example/diplomes/promo-1.xlsx");
-    when(bucketComponent.presign(eq("diplomes/promo-1.xlsx"), any())).thenReturn(presigned);
+    var presigned = new URL("https://bucket.example/diplomes/promo-2023.xlsx");
+    when(bucketComponent.presign(eq("diplomes/promo-2023.xlsx"), any())).thenReturn(presigned);
 
-    var url = diplomeService.genererListeDiplomes(1);
+    var url = diplomeService.genererListeDiplomes(2023);
 
     assertEquals(presigned, url);
-    verify(bucketComponent).upload(any(File.class), eq("diplomes/promo-1.xlsx"));
+    verify(bucketComponent).upload(any(File.class), eq("diplomes/promo-2023.xlsx"));
   }
 
   private User newStudent(String std, String prenom, String email, ParcoursType parcours) {
@@ -151,6 +158,7 @@ public class DiplomeServiceIT extends BaseIT {
             .password("x")
             .role(Role.STUDENT)
             .parcours(parcours)
+            .promotion(2023)
             .build());
   }
 

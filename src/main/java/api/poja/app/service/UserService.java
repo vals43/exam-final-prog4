@@ -51,6 +51,7 @@ public class UserService {
             .password(passwordEncoder.encode(DEFAULT_PASSWORD))
             .role(dto.role())
             .parcours(dto.parcours())
+            .promotion(dto.promotion())
             .build();
     return userRepository.save(user);
   }
@@ -71,6 +72,7 @@ public class UserService {
     existing.setEmail(dto.email());
     existing.setRole(dto.role());
     existing.setParcours(dto.parcours());
+    existing.setPromotion(dto.promotion());
     if (dto.std() != null) {
       existing.setStd(dto.std());
     }

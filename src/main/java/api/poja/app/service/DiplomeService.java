@@ -4,12 +4,12 @@ import api.poja.app.endpoint.rest.controller.DiplomeMapper;
 import api.poja.app.endpoint.rest.model.DiplomeDto;
 import api.poja.app.file.bucket.BucketComponent;
 import api.poja.app.model.Cours;
-import api.poja.app.model.Inscription;
 import api.poja.app.model.Role;
 import api.poja.app.model.User;
 import api.poja.app.repository.CoursRepository;
 import api.poja.app.repository.InscriptionRepository;
 import api.poja.app.repository.NoteRepository;
+import api.poja.app.repository.UserRepository;
 import api.poja.app.service.export.XlsxDiplomesExporter;
 import java.io.File;
 import java.math.BigDecimal;
@@ -32,42 +32,38 @@ public class DiplomeService {
   private final InscriptionRepository inscriptionRepository;
   private final NoteRepository noteRepository;
   private final CoursRepository coursRepository;
+  private final UserRepository userRepository;
   private final BucketComponent bucketComponent;
   private final NoteCalculator noteCalculator;
   private final XlsxDiplomesExporter xlsxDiplomesExporter;
   private final DiplomeMapper diplomeMapper;
 
   @Transactional(readOnly = true)
-  public URL genererListeDiplomes(Integer annee) {
-    var diplomes = diplomes(annee);
-    File xlsx = xlsxDiplomesExporter.generer(diplomes, annee);
-    var key = BUCKET_PREFIX + "promo-" + annee + ".xlsx";
+  public URL genererListeDiplomes(Integer promotion) {
+    var diplomes = diplomes(promotion);
+    File xlsx = xlsxDiplomesExporter.generer(diplomes, promotion);
+    var key = BUCKET_PREFIX + "promo-" + promotion + ".xlsx";
     bucketComponent.upload(xlsx, key);
     return bucketComponent.presign(key, Duration.ofMinutes(15));
   }
 
   @Transactional(readOnly = true)
-  public List<DiplomeDto> diplomes(Integer annee) {
+  public List<DiplomeDto> diplomes(Integer promotion) {
     var students =
-        inscriptionRepository.findByAnnee(annee).stream()
-            .map(Inscription::getStudent)
-            .filter(s -> s.getRole() == Role.STUDENT)
-            .distinct()
+        userRepository.findByRole(Role.STUDENT).stream()
+            .filter(s -> s.getPromotion() != null && s.getPromotion().equals(promotion))
             .toList();
     var ranked = new ArrayList<DiplomeDto>();
     students.stream()
-        .map(s -> toDiplome(s, annee))
+        .map(this::toDiplome)
         .filter(d -> d != null)
         .sorted(Comparator.comparing(DiplomeDto::moyenneGenerale).reversed())
         .forEach(d -> ranked.add(diplomeMapper.withRang(ranked.size() + 1, d)));
     return ranked;
   }
 
-  private DiplomeDto toDiplome(User student, Integer annee) {
-    var inscrits =
-        inscriptionRepository.findByStudentId(student.getId()).stream()
-            .filter(i -> i.getAnnee() <= annee)
-            .toList();
+  private DiplomeDto toDiplome(User student) {
+    var inscrits = inscriptionRepository.findByStudentId(student.getId());
     if (inscrits.isEmpty() || student.getParcours() == null) {
       return null;
     }
@@ -75,7 +71,7 @@ public class DiplomeService {
         noteRepository.findByStudentId(student.getId()).stream()
             .collect(Collectors.groupingBy(n -> n.getExamen().getCours().getId()));
     var coursSuivis =
-        coursRepository.findBySemestreBetween(1, annee * 2).stream()
+        coursRepository.findBySemestreBetween(1, 6).stream()
             .filter(c -> noteCalculator.appartientAuParcours(c, student.getParcours()))
             .toList();
     var notesEtCredits = new ArrayList<NoteCalculator.NoteEtCredits>();

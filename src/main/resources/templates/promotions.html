@@ -18,10 +18,10 @@
         <tr><th>Promotion</th><th>Liste des diplômés</th></tr>
       </thead>
       <tbody>
-        <tr th:each="promo : ${promotions}">
-          <td th:text="${promo} + ' (promotion)'">2024</td>
+        <tr th:each="entry : ${promotions}">
+          <td th:text="${entry.value}">2021 (G)</td>
           <td>
-            <a th:if="${isAdmin}" th:href="@{/promotions/{annee}/diplomes(annee=${promo})}">
+            <a th:if="${isAdmin}" th:href="@{/promotions/{promotion}/diplomes(promotion=${entry.key})}">
               Télécharger la liste des diplômés
             </a>
             <span th:unless="${isAdmin}">—</span>
