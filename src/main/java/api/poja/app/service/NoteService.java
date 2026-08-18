@@ -41,6 +41,25 @@ public class NoteService {
     return listByStudentId(studentId).stream().map(this::toView).sorted(comparator()).toList();
   }
 
+  @Transactional(readOnly = true)
+  public List<NoteViewDto> viewByTeacherId(String teacherId) {
+    List<Affectation> assignments = affectationRepository.findByTeacherId(teacherId);
+    return noteRepository.findAll().stream()
+        .filter(
+            n ->
+                assignments.stream()
+                    .anyMatch(
+                        a ->
+                            a.getCours().getId().equals(n.getExamen().getCours().getId())
+                                && a.getGroupe()
+                                    .getId()
+                                    .equals(n.getInscription().getGroupe().getId())
+                                && a.getAnnee().equals(n.getInscription().getAnnee())))
+        .map(this::toView)
+        .sorted(Comparator.comparing(NoteViewDto::coursRef).thenComparing(NoteViewDto::examenDate))
+        .toList();
+  }
+
   public List<Note> listByExamenId(String examenId) {
     return noteRepository.findByExamenId(examenId);
   }

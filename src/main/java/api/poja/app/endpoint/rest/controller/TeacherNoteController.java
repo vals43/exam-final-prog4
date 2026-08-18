@@ -2,6 +2,7 @@ package api.poja.app.endpoint.rest.controller;
 
 import api.poja.app.endpoint.rest.model.AffectationDto;
 import api.poja.app.endpoint.rest.model.NoteDto;
+import api.poja.app.endpoint.rest.model.NoteViewDto;
 import api.poja.app.model.User;
 import api.poja.app.service.AffectationService;
 import api.poja.app.service.NoteService;
@@ -53,5 +54,12 @@ public class TeacherNoteController {
   public void grade(Authentication authentication, @Valid @RequestBody NoteDto dto) {
     User teacher = userService.getByEmail(authentication.getName());
     noteService.grade(dto, teacher);
+  }
+
+  @GetMapping("/notes")
+  @PreAuthorize("hasRole('TEACHER')")
+  public List<NoteViewDto> myNotes(Authentication authentication) {
+    User teacher = userService.getByEmail(authentication.getName());
+    return noteService.viewByTeacherId(teacher.getId());
   }
 }

@@ -218,6 +218,31 @@ public class DomainEndpointsIT extends BaseIT {
   }
 
   @Test
+  void teacher_lists_notes_of_own_courses() throws Exception {
+    mockMvc
+        .perform(
+            post("/teacher/notes")
+                .with(user(teacher.getEmail()).roles("TEACHER"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writeValueAsString(
+                        Map.of(
+                            "studentId", student.getId(),
+                            "examenId", examen.getId(),
+                            "inscriptionId", inscription.getId(),
+                            "valeur", 13.0,
+                            "raison", "Saisie initiale"))))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/teacher/notes").with(user(teacher.getEmail()).roles("TEACHER")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].coursRef").value("PROG9"))
+        .andExpect(jsonPath("$[0].valeur").value(13.0))
+        .andExpect(jsonPath("$[0].version").value(1));
+  }
+
+  @Test
   void teacher_cannot_grade_without_assignment() throws Exception {
     var otherTeacher =
         userRepository.save(
