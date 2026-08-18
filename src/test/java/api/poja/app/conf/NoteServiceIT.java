@@ -82,7 +82,7 @@ public class NoteServiceIT extends BaseIT {
                 .date(Instant.parse("2024-01-15T09:00:00Z"))
                 .coefficient(new BigDecimal("0.5"))
                 .build());
-    var groupe = groupeRepository.save(Groupe.builder().ref("K9").annee(1).build());
+    var groupe = groupeRepository.save(Groupe.builder().ref("K9").build());
     teacher =
         userRepository.save(
             User.builder()
@@ -255,7 +255,7 @@ public class NoteServiceIT extends BaseIT {
                 .date(Instant.parse("2024-06-15T09:00:00Z"))
                 .coefficient(new BigDecimal("1.0"))
                 .build());
-    var groupe2 = groupeRepository.save(Groupe.builder().ref("K9b").annee(1).build());
+    var groupe2 = groupeRepository.save(Groupe.builder().ref("K9b").build());
     var inscription2 =
         inscriptionRepository.save(
             Inscription.builder().student(student).groupe(groupe2).semestre(2).annee(2024).build());

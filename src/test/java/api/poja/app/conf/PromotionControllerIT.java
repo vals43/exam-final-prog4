@@ -54,7 +54,7 @@ public class PromotionControllerIT extends BaseIT {
                 .password("x")
                 .role(Role.ADMIN)
                 .build());
-    var groupe = groupeRepository.save(Groupe.builder().ref("K9").annee(1).build());
+    var groupe = groupeRepository.save(Groupe.builder().ref("K9").build());
     var student =
         userRepository.save(
             User.builder()

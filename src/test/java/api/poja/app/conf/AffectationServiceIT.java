@@ -51,7 +51,7 @@ public class AffectationServiceIT extends BaseIT {
                 .credits(6)
                 .semestre(1)
                 .build());
-    groupe = groupeRepository.save(Groupe.builder().ref("K9").annee(1).build());
+    groupe = groupeRepository.save(Groupe.builder().ref("K9").build());
     teacher =
         userRepository.save(
             User.builder()
@@ -138,7 +138,7 @@ public class AffectationServiceIT extends BaseIT {
                 .password("x")
                 .role(Role.TEACHER)
                 .build());
-    var otherGroupe = groupeRepository.save(Groupe.builder().ref("K8").annee(1).build());
+    var otherGroupe = groupeRepository.save(Groupe.builder().ref("K8").build());
     affectationService.create(
         new AffectationDto(null, cours.getId(), groupe.getId(), teacher.getId(), 2024));
     affectationService.create(

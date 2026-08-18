@@ -111,7 +111,7 @@ public class ReleveServiceIT extends BaseIT {
                 .semestre(2)
                 .parcours(List.of(el))
                 .build());
-    var groupe = groupeRepository.save(Groupe.builder().ref("K9").annee(1).build());
+    var groupe = groupeRepository.save(Groupe.builder().ref("K9").build());
     var inscription1 =
         inscriptionRepository.save(
             Inscription.builder().student(student).groupe(groupe).semestre(1).annee(1).build());

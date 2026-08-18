@@ -108,11 +108,16 @@ public class SchoolDataSeeder implements CommandLineRunner {
     var tn = newParcours(ParcoursType.TN, "Télécommunicant");
     parcoursRepository.saveAll(List.of(el, tn));
 
-    var k1 = newGroupe("K1", 1);
-    var k2 = newGroupe("K2", 1);
-    var k3 = newGroupe("K3", 2);
-    var k4 = newGroupe("K4", 3);
-    groupeRepository.saveAll(List.of(k1, k2, k3, k4));
+    var g1 = newGroupe("G1");
+    var g2 = newGroupe("G2");
+    var g3 = newGroupe("G3");
+    var h1 = newGroupe("H1");
+    var h2 = newGroupe("H2");
+    var h3 = newGroupe("H3");
+    var j1 = newGroupe("J1");
+    var j2 = newGroupe("J2");
+    var j3 = newGroupe("J3");
+    groupeRepository.saveAll(List.of(g1, g2, g3, h1, h2, h3, j1, j2, j3));
 
     var admin = newUser("ADM00", "Admin", "System", "admin@hei.edu", Role.ADMIN, null, null);
     var manitra =
@@ -221,15 +226,15 @@ public class SchoolDataSeeder implements CommandLineRunner {
 
     var inscriptions = new ArrayList<Inscription>();
     for (User student : students) {
-      Groupe annee1 = student.getParcours() == ParcoursType.EL ? k1 : k2;
+      var groups = groupsFor(student, g1, g2, g3, h1, h2, h3, j1, j2, j3);
       inscriptions.addAll(
           List.of(
-              newInscription(student, annee1, 1, 1),
-              newInscription(student, annee1, 2, 1),
-              newInscription(student, k3, 3, 2),
-              newInscription(student, k3, 4, 2),
-              newInscription(student, k4, 5, 3),
-              newInscription(student, k4, 6, 3)));
+              newInscription(student, groups.get(0), 1, 1),
+              newInscription(student, groups.get(1), 2, 1),
+              newInscription(student, groups.get(2), 3, 2),
+              newInscription(student, groups.get(3), 4, 2),
+              newInscription(student, groups.get(4), 5, 3),
+              newInscription(student, groups.get(5), 6, 3)));
     }
     inscriptionRepository.saveAll(inscriptions);
 
@@ -237,15 +242,25 @@ public class SchoolDataSeeder implements CommandLineRunner {
     createExams(coursByRef, 2025, 3);
     createExams(coursByRef, 2026, 5);
 
-    var groupsByAnnee = Map.of(1, List.of(k1, k2), 2, List.of(k3), 3, List.of(k4));
+    var groupsByPromo = List.of(List.of(g1, g2, g3), List.of(h1, h2, h3), List.of(j1, j2, j3));
     var affectations = new ArrayList<Affectation>();
     int index = 0;
     for (Cours cours : coursByRef.values()) {
       int annee = (cours.getSemestre() + 1) / 2;
-      for (Groupe groupe : groupsByAnnee.get(annee)) {
-        User teacher = index % 2 == 0 ? manitra : lova;
-        affectations.add(newAffectation(cours, groupe, teacher, annee));
-        index++;
+      boolean elOnly = isOnly(cours, ParcoursType.EL);
+      boolean tnOnly = isOnly(cours, ParcoursType.TN);
+      for (List<Groupe> promoGroups : groupsByPromo) {
+        List<Groupe> groupes = promoGroups;
+        if (elOnly) {
+          groupes = List.of(promoGroups.get(0), promoGroups.get(1));
+        } else if (tnOnly) {
+          groupes = List.of(promoGroups.get(2));
+        }
+        for (Groupe groupe : groupes) {
+          User teacher = index % 2 == 0 ? manitra : lova;
+          affectations.add(newAffectation(cours, groupe, teacher, annee));
+          index++;
+        }
       }
     }
     affectationRepository.saveAll(affectations);
@@ -277,6 +292,13 @@ public class SchoolDataSeeder implements CommandLineRunner {
           var examen = examens.get(i);
           var semestre = cours.getSemestre();
           if (studentInscriptions.stream().noneMatch(ins -> ins.getSemestre().equals(semestre))) {
+            continue;
+          }
+          boolean appartientAuParcours =
+              cours.getParcours() != null
+                  && cours.getParcours().stream()
+                      .anyMatch(p -> p.getCode() == student.getParcours());
+          if (!appartientAuParcours) {
             continue;
           }
           Inscription inscription =
@@ -338,8 +360,39 @@ public class SchoolDataSeeder implements CommandLineRunner {
     return Parcours.builder().code(code).nom(nom).build();
   }
 
-  private Groupe newGroupe(String ref, int annee) {
-    return Groupe.builder().ref(ref).annee(annee).build();
+  private Groupe newGroupe(String ref) {
+    return Groupe.builder().ref(ref).build();
+  }
+
+  private List<Groupe> groupsFor(
+      User student,
+      Groupe g1,
+      Groupe g2,
+      Groupe g3,
+      Groupe h1,
+      Groupe h2,
+      Groupe h3,
+      Groupe j1,
+      Groupe j2,
+      Groupe j3) {
+    return switch (student.getStd()) {
+      case "STD21001" -> List.of(g1, g1, g1, g1, g2, g2);
+      case "STD21004" -> List.of(g2, g2, g2, g3, g3, g3);
+      case "STD22001" -> List.of(h2, h2, h2, h1, h1, h1);
+      case "STD22004" -> List.of(h1, h1, h1, h3, h3, h3);
+      case "STD23107" -> List.of(j1, j1, j1, j1, j2, j2);
+      case "STD23108" -> List.of(j1, j1, j1, j3, j3, j3);
+      case "STD23111" -> List.of(j2, j2, j2, j2, j1, j1);
+      case "STD23112" -> List.of(j2, j2, j2, j3, j3, j3);
+      case "STD23113" -> List.of(j3, j3, j3, j1, j1, j1);
+      default -> throw new IllegalStateException("Étudiant inconnu : " + student.getStd());
+    };
+  }
+
+  private boolean isOnly(Cours cours, ParcoursType parcours) {
+    return cours.getParcours() != null
+        && cours.getParcours().size() == 1
+        && cours.getParcours().get(0).getCode() == parcours;
   }
 
   private User newUser(
@@ -376,42 +429,48 @@ public class SchoolDataSeeder implements CommandLineRunner {
   }
 
   private Map<String, Cours> createCourses(Parcours el, Parcours tn) {
-    var common = List.of(el, tn);
-    var cours =
-        coursRepository.saveAll(
-            List.of(
-                cours("PROG1", "Programmation 1", 6, 1, common),
-                cours("WEB1", "Web 1", 6, 1, common),
-                cours("THEORIE1", "Théorie 1", 6, 1, common),
-                cours("SYS1", "Systèmes et Réseaux 1", 6, 1, common),
-                cours("MGT1", "Management 1", 4, 1, common),
-                cours("LANGUES1", "Langues Vivantes 1", 4, 1, common),
-                cours("PROG2", "Programmation 2", 6, 2, common),
-                cours("DONNEES1", "Données 1", 4, 2, common),
-                cours("SYS2", "Systèmes et Réseaux 2", 8, 2, common),
-                cours("EL1", "Électronique 1", 10, 2, common),
-                cours("WEB2", "Web 2", 9, 3, common),
-                cours("SYS3", "Systèmes et Réseaux 3", 3, 3, common),
-                cours("PROG3", "Programmation 3", 6, 3, common),
-                cours("MGT2", "Management 2", 4, 3, common),
-                cours("PROG4", "Programmation 4", 6, 3, common),
-                cours("PROJET1", "Projet 1", 18, 4, common),
-                cours("LV2", "Langues Vivantes 2", 4, 4, common),
-                cours("DONNEES2", "Données 2", 5, 4, common),
-                cours("IA1", "Intelligence Artificielle 1", 5, 4, common),
-                cours("SECU1", "Sécurité 1", 6, 5, common),
-                cours("SECU2", "Sécurité 2", 4, 5, common),
-                cours("SECU3", "Sécurité 3", 6, 5, common),
-                cours("PRO3", "Projet 3", 3, 5, common),
-                cours("SECU4", "Sécurité 4", 4, 6, common),
-                cours("PRO4", "Projet 4", 30, 6, common),
-                cours("PROG5", "Programmation 5", 7, 6, common)));
+    var cours = coursRepository.saveAll(definitions(el, tn));
     var byRef = new HashMap<String, Cours>();
     cours.forEach(c -> byRef.put(c.getRef(), c));
     return byRef;
   }
 
-  private Cours cours(
+  public static List<Cours> definitions(Parcours el, Parcours tn) {
+    var common = List.of(el, tn);
+    return List.of(
+        cours("PROG1", "Programmation 1", 6, 1, common),
+        cours("WEB1", "Web 1", 6, 1, common),
+        cours("THEORIE1", "Théorie 1", 6, 1, common),
+        cours("SYS1", "Systèmes et Réseaux 1", 6, 1, common),
+        cours("MGT1", "Management 1", 4, 1, common),
+        cours("LV1", "Langues Vivantes 1", 2, 1, common),
+        cours("PROG2", "Programmation 2", 6, 2, common),
+        cours("DONNEES1", "Données 1", 4, 2, common),
+        cours("SYS2", "Systèmes et Réseaux 2", 8, 2, common),
+        cours("WEB2", "Web 2", 12, 2, common),
+        cours("WEB3", "Web 3", 9, 3, common),
+        cours("PROG3", "Programmation 3", 6, 3, common),
+        cours("MGT2", "Management 2", 5, 3, common),
+        cours("DONNEES2", "Données 2", 5, 3, common),
+        cours("LV2", "Langues Vivantes 2", 5, 3, common),
+        cours("PROJET1", "Projet 1", 18, 4, common),
+        cours("IA1", "Intelligence Artificielle 1", 3, 4, common),
+        cours("PROG4", "Programmation 4", 6, 4, List.of(el)),
+        cours("SYS3", "Systèmes et Réseaux 3", 3, 4, List.of(el)),
+        cours("TN1", "Télécommunications 1", 6, 4, List.of(tn)),
+        cours("METIER1", "Métier 1", 3, 4, List.of(tn)),
+        cours("SECU1", "Sécurité 1", 6, 5, common),
+        cours("SECU2", "Sécurité 2", 4, 5, common),
+        cours("SECU3", "Sécurité 3", 6, 5, common),
+        cours("PRO3", "Projet 3", 3, 5, common),
+        cours("PROG5", "Programmation 5", 7, 5, List.of(el)),
+        cours("SYS4", "Systèmes et Réseaux 4", 4, 5, List.of(el)),
+        cours("TN2", "Télécommunications 2", 7, 5, List.of(tn)),
+        cours("METIER2", "Métier 2", 4, 5, List.of(tn)),
+        cours("PROJET4", "Projet 4 (Stage)", 30, 6, common));
+  }
+
+  private static Cours cours(
       String ref, String intitule, int credits, int semestre, List<Parcours> parcours) {
     return Cours.builder()
         .ref(ref)

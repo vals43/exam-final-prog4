@@ -86,8 +86,8 @@ public class DiplomeServiceIT extends BaseIT {
     var coursWeb = newCours("WEB9", 4, 2, List.of(el));
     var coursTn = newCours("TN9", 6, 1, List.of(tn));
 
-    var k1 = newGroupe("K1", 1);
-    var k2 = newGroupe("K2", 1);
+    var k1 = newGroupe("K1");
+    var k2 = newGroupe("K2");
 
     var insAlice1 = newInscription(alice, k1, 1, 1);
     var insAlice2 = newInscription(alice, k2, 2, 1);
@@ -173,8 +173,8 @@ public class DiplomeServiceIT extends BaseIT {
             .build());
   }
 
-  private Groupe newGroupe(String ref, int annee) {
-    return groupeRepository.save(Groupe.builder().ref(ref).annee(annee).build());
+  private Groupe newGroupe(String ref) {
+    return groupeRepository.save(Groupe.builder().ref(ref).build());
   }
 
   private Inscription newInscription(User student, Groupe groupe, int semestre, int annee) {

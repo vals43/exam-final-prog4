@@ -134,7 +134,7 @@ public class DomainEndpointsIT extends BaseIT {
                 .semestre(1)
                 .parcours(List.of(el))
                 .build());
-    var groupe = groupeRepository.save(Groupe.builder().ref("K9").annee(1).build());
+    var groupe = groupeRepository.save(Groupe.builder().ref("K9").build());
     cours2 =
         coursRepository.save(
             Cours.builder()

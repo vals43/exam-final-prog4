@@ -25,7 +25,4 @@ public class Groupe {
 
   @Column(nullable = false)
   private String ref;
-
-  @Column(nullable = false)
-  private Integer annee;
 }
