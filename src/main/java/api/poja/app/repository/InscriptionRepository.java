@@ -9,6 +9,8 @@ public interface InscriptionRepository extends JpaRepository<Inscription, String
 
   List<Inscription> findByGroupeId(String groupeId);
 
+  List<Inscription> findByGroupeIdAndAnnee(String groupeId, Integer annee);
+
   List<Inscription> findByAnnee(Integer annee);
 
   List<Inscription> findByStudentIdAndAnnee(String studentId, Integer annee);
