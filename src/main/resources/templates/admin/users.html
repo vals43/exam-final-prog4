@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Gestion des utilisateurs')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Gestion des utilisateurs</h1>
+          <p>Comptes administrateurs, enseignants et étudiants.</p>
+        </div>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 th:text="'Liste des ' + ${role.name().toLowerCase()} + 's'">Liste</h2>
+          <div class="page-header-actions">
+            <a class="btn btn-sm" th:classappend="${role.name() == 'STUDENT' ? ' btn-primary' : ' btn-secondary'}" th:href="@{/admin/ui/users(role='STUDENT')}">Étudiants</a>
+            <a class="btn btn-sm" th:classappend="${role.name() == 'TEACHER' ? ' btn-primary' : ' btn-secondary'}" th:href="@{/admin/ui/users(role='TEACHER')}">Enseignants</a>
+            <a class="btn btn-sm" th:classappend="${role.name() == 'ADMIN' ? ' btn-primary' : ' btn-secondary'}" th:href="@{/admin/ui/users(role='ADMIN')}">Admins</a>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Matricule</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Parcours</th>
+                <th>Promotion</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="u : ${users}">
+                <td th:text="${u.std != null ? u.std : '—'}" class="text-accent">STD</td>
+                <td th:text="${u.nom}">Nom</td>
+                <td th:text="${u.prenom}">Prénom</td>
+                <td th:text="${u.email}">email</td>
+                <td>
+                  <span th:if="${u.parcours != null}" class="badge" th:classappend="${u.parcours.name() == 'EL' ? ' badge-el' : ' badge-tn'}" th:text="${u.parcours}">EL</span>
+                  <span th:unless="${u.parcours != null}" class="muted">—</span>
+                </td>
+                <td th:text="${u.promotion != null ? u.promotion : '—'}">2023</td>
+                <td>
+                  <div class="actions">
+                    <a class="btn btn-secondary btn-sm" th:href="@{/admin/ui/users(role=${role}, edit=${u.id})}">Modifier</a>
+                    <form class="inline-form" th:action="@{/admin/ui/users/{id}/delete(id=${u.id})}" method="post">
+                      <input type="hidden" name="role" th:value="${role}" />
+                      <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <p>Aucun utilisateur pour ce rôle.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 th:text="${form.id != null ? 'Modifier l'utilisateur' : 'Ajouter un utilisateur'}">Ajouter</h2>
+        </div>
+        <div class="card-body">
+          <form
+            th:action="${form.id != null} ? @{/admin/ui/users/{id}(id=${form.id})} : @{/admin/ui/users}"
+            th:object="${form}"
+            method="post"
+          >
+            <div class="form-grid">
+              <div class="field">
+                <label for="role">Rôle</label>
+                <select id="role" th:field="*{role}">
+                  <option value="STUDENT">Étudiant</option>
+                  <option value="TEACHER">Enseignant</option>
+                  <option value="ADMIN">Administrateur</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="parcours">Parcours</label>
+                <select id="parcours" th:field="*{parcours}">
+                  <option value="">—</option>
+                  <option value="EL">Électronicien (EL)</option>
+                  <option value="TN">Télécommunicant (TN)</option>
+                </select>
+                <div class="hint">Obligatoire pour un étudiant.</div>
+              </div>
+              <div class="field">
+                <label for="promotion">Promotion (année d'entrée)</label>
+                <input type="number" id="promotion" th:field="*{promotion}" min="2020" max="2099" />
+              </div>
+              <div class="field">
+                <label for="std">Matricule</label>
+                <input type="text" id="std" th:field="*{std}" placeholder="Ex. STD24001" />
+              </div>
+              <div class="field">
+                <label for="nom">Nom</label>
+                <input type="text" id="nom" th:field="*{nom}" placeholder="Nom" />
+              </div>
+              <div class="field">
+                <label for="prenom">Prénom</label>
+                <input type="text" id="prenom" th:field="*{prenom}" placeholder="Prénom" />
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" th:field="*{email}" placeholder="vous@hei.edu" />
+              </div>
+            </div>
+            <div class="alert alert-info">
+              Le mot de passe initial de tout nouveau compte est <code>password123</code>.
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" th:text="${form.id != null ? 'Enregistrer' : 'Ajouter'}">Ajouter</button>
+              <a class="btn btn-secondary" th:href="@{/admin/ui/users(role=${role})}">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

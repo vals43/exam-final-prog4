@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Gestion des affectations')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Gestion des affectations</h1>
+          <p>Un cours est donné par un enseignant à un ou plusieurs groupes.</p>
+        </div>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Liste des affectations</h2>
+          <span class="muted small" th:text="${#lists.size(affectations)} + ' affectation(s)'">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Cours</th>
+                <th>Intitulé</th>
+                <th>Groupe</th>
+                <th>Enseignant</th>
+                <th>Année</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="a : ${affectations}">
+                <td th:text="${a.cours.ref}" class="text-accent">PROG1</td>
+                <td th:text="${a.cours.intitule}">Programmation</td>
+                <td th:text="${a.groupe.ref}">G1</td>
+                <td th:text="${a.teacher.prenom} + ' ' + ${a.teacher.nom}">Enseignant</td>
+                <td>
+                  <span class="badge badge-teacher" th:text="'Année ' + ${a.annee}">Année 1</span>
+                </td>
+                <td>
+                  <div class="actions">
+                    <form class="inline-form" th:action="@{/admin/ui/affectations/{id}/delete(id=${a.id})}" method="post">
+                      <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(affectations)}">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon">🔗</div>
+                    <p>Aucune affectation.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Ajouter une affectation</h2>
+        </div>
+        <div class="card-body">
+          <form th:action="@{/admin/ui/affectations}" th:object="${form}" method="post">
+            <div class="form-grid">
+              <div class="field">
+                <label for="coursId">Cours</label>
+                <select id="coursId" th:field="*{coursId}">
+                  <option value="">— Choisir —</option>
+                  <option th:each="c : ${coursList}" th:value="${c.id}" th:text="${c.ref} + ' — ' + ${c.intitule}">PROG1</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="groupeId">Groupe</label>
+                <select id="groupeId" th:field="*{groupeId}">
+                  <option value="">— Choisir —</option>
+                  <option th:each="g : ${groupes}" th:value="${g.id}" th:text="${g.ref}">G1</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="teacherId">Enseignant</label>
+                <select id="teacherId" th:field="*{teacherId}">
+                  <option value="">— Choisir —</option>
+                  <option th:each="t : ${enseignants}" th:value="${t.id}" th:text="${t.prenom} + ' ' + ${t.nom}">Enseignant</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="annee">Année d'étude</label>
+                <select id="annee" th:field="*{annee}">
+                  <option value="">— Choisir —</option>
+                  <option th:each="n : ${#numbers.sequence(1, 3)}" th:value="${n}" th:text="'Année ' + ${n}">Année 1</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Ajouter</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,33 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Promotions — HEI</title>
-    <style>
-      body { font-family: Arial, sans-serif; margin: 2rem; }
-      h1 { color: #1f4e79; }
-      table { border-collapse: collapse; margin-top: 1rem; }
-      th, td { border: 1px solid #ccc; padding: 0.5rem 1rem; text-align: left; }
-      a { color: #1f4e79; }
-    </style>
-  </head>
+  <head th:replace="~{fragments/layout :: head('Promotions')}"></head>
   <body>
-    <h1>Liste des promotions</h1>
-    <table>
-      <thead>
-        <tr><th>Promotion</th><th>Liste des diplômés</th></tr>
-      </thead>
-      <tbody>
-        <tr th:each="entry : ${promotions}">
-          <td th:text="${entry.value}">2021 (G)</td>
-          <td>
-            <a th:if="${isAdmin}" th:href="@{/promotions/{promotion}/diplomes(promotion=${entry.key})}">
-              Télécharger la liste des diplômés
-            </a>
-            <span th:unless="${isAdmin}">—</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Liste des promotions</h1>
+          <p>Résultats des trois promotions et téléchargement des listes de diplômés.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Promotions</h2>
+          <span class="muted small">Les listes de diplômés sont générées au format Excel.</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Promotion</th>
+                <th>Liste des diplômés</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="entry : ${promotions}">
+                <td>
+                  <span class="badge badge-el" th:text="${entry.value}">2021 (G)</span>
+                </td>
+                <td>
+                  <a
+                    th:if="${isAdmin}"
+                    class="btn btn-accent btn-sm"
+                    th:href="@{/promotions/{promotion}/diplomes(promotion=${entry.key})}"
+                  >
+                    Télécharger la liste des diplômés
+                  </a>
+                  <span th:unless="${isAdmin}" class="muted small">Réservé à l'administration</span>
+                </td>
+              </tr>
+              <tr th:if="${#maps.isEmpty(promotions)}">
+                <td colspan="2">
+                  <div class="empty-state">
+                    <div class="empty-icon">🎓</div>
+                    <p>Aucune promotion.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
   </body>
 </html>

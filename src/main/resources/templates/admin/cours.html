@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Gestion des cours')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Gestion des cours</h1>
+          <p>Référentiel pédagogique — 30 crédits par semestre.</p>
+        </div>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+      <div th:if="${param.created != null}" class="alert alert-success">Cours enregistré.</div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Liste des cours</h2>
+          <span class="muted small" th:text="${#lists.size(cours)} + ' cours'">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Référence</th>
+                <th>Intitulé</th>
+                <th class="numeric">Crédits</th>
+                <th>Semestre</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="c : ${cours}">
+                <td th:text="${c.ref}" class="text-accent">PROG1</td>
+                <td th:text="${c.intitule}">Programmation</td>
+                <td class="numeric" th:text="${c.credits}">6</td>
+                <td>
+                  <span class="badge badge-teacher" th:text="'S' + ${c.semestre}">S1</span>
+                </td>
+                <td>
+                  <div class="actions">
+                    <a class="btn btn-secondary btn-sm" th:href="@{/admin/ui/cours/{id}/edit(id=${c.id})}">Modifier</a>
+                    <form class="inline-form" th:action="@{/admin/ui/cours/{id}/delete(id=${c.id})}" method="post">
+                      <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(cours)}">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon">📚</div>
+                    <p>Aucun cours.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 th:text="${editId != null ? 'Modifier le cours' : 'Ajouter un cours'}">Ajouter un cours</h2>
+        </div>
+        <div class="card-body">
+          <form
+            th:action="${editId != null} ? @{/admin/ui/cours/{id}(id=${editId})} : @{/admin/ui/cours}"
+            th:object="${form}"
+            method="post"
+          >
+            <div class="form-grid">
+              <div class="field">
+                <label for="ref">Référence</label>
+                <input type="text" id="ref" th:field="*{ref}" placeholder="Ex. PROG5" />
+              </div>
+              <div class="field">
+                <label for="intitule">Intitulé</label>
+                <input type="text" id="intitule" th:field="*{intitule}" placeholder="Ex. Programmation avancée" />
+              </div>
+              <div class="field">
+                <label for="credits">Crédits</label>
+                <input type="number" id="credits" th:field="*{credits}" min="1" max="30" />
+              </div>
+              <div class="field">
+                <label for="semestre">Semestre</label>
+                <select id="semestre" th:field="*{semestre}">
+                  <option th:each="s : ${#numbers.sequence(1, 6)}" th:value="${s}" th:text="'S' + ${s}">S1</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" th:text="${editId != null ? 'Enregistrer' : 'Ajouter'}">Ajouter</button>
+              <a class="btn btn-secondary" th:href="@{/admin/ui/cours}">Annuler</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
