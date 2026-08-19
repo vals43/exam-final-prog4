@@ -17,77 +17,77 @@
           <a
             sec:authorize="hasRole('ADMIN')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/admin/ui') ? ' active' : ''}"
+            th:classappend="${uri == '/admin/ui' ? ' active' : ''}"
             th:href="@{/admin/ui}"
             >Tableau de bord</a
           >
           <a
             sec:authorize="hasRole('ADMIN')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/admin/ui/cours') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/admin/ui/cours') ? ' active' : ''}"
             th:href="@{/admin/ui/cours}"
             >Cours</a
           >
           <a
             sec:authorize="hasRole('ADMIN')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/admin/ui/examens') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/admin/ui/examens') ? ' active' : ''}"
             th:href="@{/admin/ui/examens}"
             >Examens</a
           >
           <a
             sec:authorize="hasRole('ADMIN')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/admin/ui/affectations') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/admin/ui/affectations') ? ' active' : ''}"
             th:href="@{/admin/ui/affectations}"
             >Affectations</a
           >
           <a
             sec:authorize="hasRole('ADMIN')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/admin/ui/users') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/admin/ui/users') ? ' active' : ''}"
             th:href="@{/admin/ui/users}"
             >Utilisateurs</a
           >
           <a
             sec:authorize="hasRole('ADMIN')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/admin/ui/releves') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/admin/ui/releves') ? ' active' : ''}"
             th:href="@{/admin/ui/releves}"
             >Relevés</a
           >
           <a
             sec:authorize="hasAnyRole('ADMIN','TEACHER')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/promotions') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/promotions') ? ' active' : ''}"
             th:href="@{/promotions}"
             >Promotions</a
           >
           <a
             sec:authorize="hasRole('TEACHER')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/teacher/ui/affectations') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/teacher/ui/affectations') ? ' active' : ''}"
             th:href="@{/teacher/ui/affectations}"
             >Mes affectations</a
           >
           <a
             sec:authorize="hasRole('TEACHER')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/teacher/ui/notes') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/teacher/ui/notes') ? ' active' : ''}"
             th:href="@{/teacher/ui/notes}"
             >Mes notes</a
           >
           <a
             sec:authorize="hasRole('STUDENT')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/student/ui/notes') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/student/ui/notes') ? ' active' : ''}"
             th:href="@{/student/ui/notes}"
             >Mes notes</a
           >
           <a
             sec:authorize="hasRole('STUDENT')"
             class="nav-link"
-            th:classappend="${#request.requestURI.startsWith('/student/ui/releves') ? ' active' : ''}"
+            th:classappend="${uri != null and uri.startsWith('/student/ui/releves') ? ' active' : ''}"
             th:href="@{/student/ui/releves}"
             >Mes relevés</a
           >
