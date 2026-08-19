@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Relevé')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Relevé — Année <span th:text="${annee}">1</span></h1>
+          <p th:text="'Étudiant ' + ${student.std} + ' — ' + ${student.nom} + ' ' + ${student.prenom}">
+            Étudiant
+          </p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-secondary" th:href="@{/student/ui/releves}">← Tous mes relevés</a>
+          <a
+            class="btn"
+            th:classappend="${mode.name() == 'PROVISOIRE' ? ' btn-primary' : ' btn-secondary'}"
+            th:href="@{/student/ui/releves/{annee}(annee=${annee}, mode='PROVISOIRE')}"
+            >Provisoire</a
+          >
+          <a
+            class="btn"
+            th:classappend="${mode.name() == 'COMPLET' ? ' btn-primary' : ' btn-secondary'}"
+            th:href="@{/student/ui/releves/{annee}(annee=${annee}, mode='COMPLET')}"
+            >Complet</a
+          >
+        </div>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+      <div th:if="${releve != null}" class="alert alert-success">
+        Le relevé a été généré au format PDF et envoyé par email.
+      </div>
+
+      <div class="stats-grid" th:if="${releve != null}">
+        <div class="stat-card">
+          <div class="stat-label">Moyenne générale</div>
+          <div class="stat-value" th:text="${releve.moyenneGenerale != null ? releve.moyenneGenerale + ' / 20' : '—'}">12 / 20</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Crédits validés</div>
+          <div class="stat-value accent" th:text="${releve.creditsValides} + ' / 60'">60 / 60</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Mode</div>
+          <div class="stat-value" th:text="${releve.mode}">PROVISOIRE</div>
+        </div>
+      </div>
+
+      <div class="card" th:if="${releve != null}">
+        <div class="card-header">
+          <h2>Détail des cours</h2>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Semestre</th>
+                <th>Cours</th>
+                <th>Intitulé</th>
+                <th class="numeric">Crédits</th>
+                <th class="numeric">Note finale</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="l : ${releve.lignes}">
+                <td>
+                  <span class="badge badge-teacher" th:text="'S' + ${l.semestre}">S1</span>
+                </td>
+                <td th:text="${l.coursRef}" class="text-accent">PROG1</td>
+                <td th:text="${l.coursIntitule}">Programmation</td>
+                <td class="numeric" th:text="${l.credits}">6</td>
+                <td class="numeric" th:text="${l.noteFinale != null ? l.noteFinale : '—'}">12</td>
+                <td>
+                  <span class="badge" th:classappend="${l.valide ? ' badge-valid' : ' badge-invalid'}"
+                        th:text="${l.valide ? 'Validé' : 'Non validé'}">Validé</span>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(releve.lignes)}">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-icon">🗂️</div>
+                    <p>Aucun cours pour cette année.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

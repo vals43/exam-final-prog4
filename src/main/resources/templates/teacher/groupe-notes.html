@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Saisie des notes')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1 th:text="${cours.ref} + ' — ' + ${cours.intitule}">PROG1 — Programmation</h1>
+          <p th:text="'Groupe ' + ${affectation.groupe.ref} + ' · Année ' + ${annee}">Groupe G1 · Année 1</p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-secondary" th:href="@{/teacher/ui/affectations}">← Mes affectations</a>
+          <a class="btn btn-secondary" th:href="@{/teacher/ui/notes}">Mes notes</a>
+        </div>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+      <div th:if="${success}" class="alert alert-success" th:text="${success}">Enregistré</div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Étudiants du groupe</h2>
+          <span class="muted small" th:text="${#lists.size(rows)} + ' étudiant(s)'">0</span>
+        </div>
+      </div>
+
+      <div class="card" th:each="row : ${rows}">
+        <div class="card-header">
+          <h3 th:text="${row.student.prenom} + ' ' + ${row.student.nom}">Étudiant</h3>
+          <span class="badge badge-student" th:text="${row.student.std}">STD</span>
+        </div>
+        <div class="card-body">
+          <form th:action="@{/teacher/ui/notes}" method="post">
+            <input type="hidden" name="studentId" th:value="${row.student.id}" />
+            <input type="hidden" name="inscriptionId" th:value="${row.inscriptionId}" />
+            <input type="hidden" name="coursId" th:value="${cours.id}" />
+            <input type="hidden" name="groupeId" th:value="${affectation.groupe.id}" />
+            <input type="hidden" name="annee" th:value="${annee}" />
+
+            <div class="form-grid">
+              <div class="field" th:each="cell : ${row.cells}">
+                <label th:text="'Examen ' + ${#temporals.format(cell.examenDate, 'dd/MM/yyyy HH:mm')} + ' — coef ' + ${cell.coefficient}">
+                  Examen
+                </label>
+                <input
+                  type="number"
+                  step="0.25"
+                  min="0"
+                  max="20"
+                  th:name="'valeur_' + ${cell.examenId}"
+                  th:value="${cell.valeur != null ? cell.valeur : ''}"
+                  placeholder="0–20"
+                />
+                <div th:if="${cell.history != null && !#lists.isEmpty(cell.history)}" class="small muted mt-1">
+                  <details>
+                    <summary>Historique <span th:text="${cell.version != null ? '· v' + cell.version : ''}"></span></summary>
+                    <ul style="margin: 0.35rem 0 0; padding-left: 1.1rem;">
+                      <li
+                        th:each="h : ${cell.history}"
+                        th:text="${#temporals.format(h.dateModification, 'dd/MM/yyyy HH:mm')} + ' : ' + ${h.ancienneValeur} + ' → ' + ${h.nouvelleValeur} + ' — ' + ${h.raison} + ' (' + ${h.modifiePar.prenom} + ')'"
+                      >historique</li>
+                    </ul>
+                  </details>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="raison">Raison de la modification (obligatoire)</label>
+              <textarea id="raison" name="raison" placeholder="Réclamation, erreur de saisie, note corrigée…"></textarea>
+              <div class="hint">Chaque changement de note est enregistré avec sa raison dans l'historique.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer les notes</button>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

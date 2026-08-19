@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Mes relevés')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Mes relevés de notes</h1>
+          <p th:text="'Étudiant ' + ${student.std} + ' — ' + ${student.nom} + ' ' + ${student.prenom}">
+            Étudiant
+          </p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-secondary" th:href="@{/student/ui/notes}">Voir mes notes</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Année d'étude</h2>
+          <span class="muted small">Chaque relevé est généré au format PDF et envoyé par email (lien S3).</span>
+        </div>
+        <div class="card-body">
+          <div class="stats-grid">
+            <div class="stat-card" th:each="annee : ${annees}">
+              <div class="stat-label" th:text="'Année ' + ${annee}">Année 1</div>
+              <div class="stat-value" th:text="'S' + (${annee} * 2 - 1) + ' · S' + (${annee} * 2)">S1 · S2</div>
+              <div class="page-header-actions mt-1">
+                <a class="btn btn-primary btn-sm" th:href="@{/student/ui/releves/{annee}(annee=${annee}, mode='PROVISOIRE')}">
+                  Voir (provisoire)
+                </a>
+                <a class="btn btn-secondary btn-sm" th:href="@{/student/ui/releves/{annee}(annee=${annee}, mode='COMPLET')}">
+                  Complet
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

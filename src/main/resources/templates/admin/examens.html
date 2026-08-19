@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Gestion des examens')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Gestion des examens</h1>
+          <p>La somme des coefficients d'un cours ne doit pas dépasser 1.</p>
+        </div>
+      </div>
+
+      <div th:if="${error}" class="alert alert-error" th:text="${error}">Erreur</div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Examens du cours</h2>
+        </div>
+        <div class="card-body">
+          <form class="form-filters" method="get" th:action="@{/admin/ui/examens}">
+            <div class="field">
+              <label for="coursId">Cours</label>
+              <select id="coursId" name="coursId" onchange="this.form.submit()">
+                <option value="">— Choisir un cours —</option>
+                <option
+                  th:each="c : ${coursList}"
+                  th:value="${c.id}"
+                  th:selected="${coursSelectionne != null && coursSelectionne.id == c.id}"
+                  th:text="${c.ref} + ' — ' + ${c.intitule}"
+                >PROG1</option>
+              </select>
+            </div>
+          </form>
+
+          <div th:if="${coursSelectionne != null}" class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th class="numeric">Coefficient</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="ex : ${examens}">
+                  <td th:text="${#temporals.format(ex.date, 'dd/MM/yyyy HH:mm')}">date</td>
+                  <td class="numeric" th:text="${ex.coefficient}">0.5</td>
+                  <td>
+                    <div class="actions">
+                      <form class="inline-form" th:action="@{/admin/ui/examens/{id}/delete(id=${ex.id})}" method="post">
+                        <input type="hidden" name="coursId" th:value="${coursSelectionne.id}" />
+                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(examens)}">
+                  <td colspan="3">
+                    <div class="empty-state">
+                      <div class="empty-icon">🧪</div>
+                      <p>Aucun examen pour ce cours.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div th:unless="${coursSelectionne != null}" class="empty-state">
+            <div class="empty-icon">🧪</div>
+            <p>Sélectionnez un cours pour voir ses examens.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Ajouter un examen</h2>
+        </div>
+        <div class="card-body">
+          <form th:action="@{/admin/ui/examens}" th:object="${form}" method="post">
+            <div class="form-grid">
+              <div class="field">
+                <label for="fcoursId">Cours</label>
+                <select id="fcoursId" th:field="*{coursId}">
+                  <option value="">— Choisir un cours —</option>
+                  <option
+                    th:each="c : ${coursList}"
+                    th:value="${c.id}"
+                    th:text="${c.ref} + ' — ' + ${c.intitule}"
+                  >PROG1</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="fdate">Date et heure</label>
+                <input type="datetime-local" id="fdate" th:field="*{date}" />
+              </div>
+              <div class="field">
+                <label for="fcoef">Coefficient</label>
+                <input type="number" id="fcoef" th:field="*{coefficient}" step="0.05" min="0" max="1" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Ajouter l'examen</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Mes affectations')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Mes affectations</h1>
+          <p th:text="'Enseignant ' + ${teacher.nom} + ' ' + ${teacher.prenom}">Enseignant</p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-accent" th:href="@{/teacher/ui/notes}">Voir mes notes</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Cours assignés</h2>
+          <span class="muted small" th:text="${#lists.size(affectations)} + ' affectation(s)'">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Année</th>
+                <th>Groupe</th>
+                <th>Cours</th>
+                <th>Intitulé</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="a : ${affectations}">
+                <td>
+                  <span class="badge badge-teacher" th:text="'Année ' + ${a.annee}">Année 1</span>
+                </td>
+                <td th:text="${a.groupeRef}" class="text-accent">G1</td>
+                <td th:text="${a.coursRef}">PROG1</td>
+                <td th:text="${a.coursIntitule}">Programmation</td>
+                <td>
+                  <div class="actions">
+                    <a class="btn btn-primary btn-sm"
+                       th:href="@{/teacher/ui/affectations/{groupeId}/{annee}/{coursId}(groupeId=${a.groupeId}, annee=${a.annee}, coursId=${a.coursId})}">
+                      Saisir les notes
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(affectations)}">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <div class="empty-icon">📋</div>
+                    <p>Aucune affectation.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

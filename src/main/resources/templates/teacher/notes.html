@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Mes notes')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Notes saisies</h1>
+          <p th:text="'Enseignant ' + ${teacher.nom} + ' ' + ${teacher.prenom}">Enseignant</p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-accent" th:href="@{/teacher/ui/affectations}">Mes affectations</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Toutes mes notes</h2>
+          <span class="muted small" th:text="${#lists.size(notes)} + ' note(s)'">0</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Cours</th>
+                <th>Intitulé</th>
+                <th>Semestre</th>
+                <th>Étudiant</th>
+                <th>Date examen</th>
+                <th class="numeric">Coef</th>
+                <th class="numeric">Note</th>
+                <th class="numeric">Version</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="n : ${notes}">
+                <td th:text="${n.coursRef}" class="text-accent">PROG1</td>
+                <td th:text="${n.coursIntitule}">Programmation</td>
+                <td>
+                  <span class="badge badge-teacher" th:text="'S' + ${n.semestre}">S1</span>
+                </td>
+                <td th:text="${n.studentPrenom} + ' ' + ${n.studentNom} + ' (' + ${n.studentStd} + ')'">Étudiant</td>
+                <td th:text="${#temporals.format(n.examenDate, 'dd/MM/yyyy HH:mm')}">date</td>
+                <td class="numeric" th:text="${n.coefficient}">0.5</td>
+                <td class="numeric" th:text="${n.valeur}">12</td>
+                <td class="numeric muted" th:text="${'v' + n.version}">v1</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(notes)}">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-icon">📄</div>
+                    <p>Aucune note saisie.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

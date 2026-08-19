@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Tableau de bord')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+    <main class="container">
+      <div class="page-header">
+        <div>
+          <h1>Tableau de bord</h1>
+          <p th:text="'Administration — ' + ${currentUser.nom} + ' ' + ${currentUser.prenom}">Admin</p>
+        </div>
+        <div class="page-header-actions">
+          <a class="btn btn-accent" th:href="@{/promotions}">Promotions &amp; diplômés</a>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Cours</div>
+          <div class="stat-value" th:text="${nbCours}">30</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Examens</div>
+          <div class="stat-value" th:text="${nbExamens}">61</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Affectations</div>
+          <div class="stat-value" th:text="${nbAffectations}">234</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Notes</div>
+          <div class="stat-value accent" th:text="${nbNotes}">477</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Groupes</div>
+          <div class="stat-value" th:text="${nbGroupes}">9</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Étudiants</div>
+          <div class="stat-value" th:text="${nbEtudiants}">9</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Enseignants</div>
+          <div class="stat-value" th:text="${nbEnseignants}">2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Promotions</div>
+          <div class="stat-value">
+            <span th:each="p : ${promotions}" th:inline="text"
+                  th:text="${p} + ' '">2021 2022 2023</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Administration rapide</h2>
+        </div>
+        <div class="card-body">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Référentiel</div>
+              <div class="small mt-1">Gérez les cours, examens et affectations.</div>
+              <div class="page-header-actions mt-1">
+                <a class="btn btn-primary btn-sm" th:href="@{/admin/ui/cours}">Cours</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/admin/ui/examens}">Examens</a>
+                <a class="btn btn-primary btn-sm" th:href="@{/admin/ui/affectations}">Affectations</a>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Personnes</div>
+              <div class="small mt-1">Créez ou modifiez les comptes utilisateurs.</div>
+              <div class="page-header-actions mt-1">
+                <a class="btn btn-primary btn-sm" th:href="@{/admin/ui/users}">Utilisateurs</a>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Notes &amp; relevés</div>
+              <div class="small mt-1">Générez un relevé PDF pour un étudiant.</div>
+              <div class="page-header-actions mt-1">
+                <a class="btn btn-primary btn-sm" th:href="@{/admin/ui/releves}">Relevés</a>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Diplômés</div>
+              <div class="small mt-1">Téléchargez la liste des diplômés par promotion.</div>
+              <div class="page-header-actions mt-1">
+                <a class="btn btn-primary btn-sm" th:href="@{/promotions}">Promotions</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
