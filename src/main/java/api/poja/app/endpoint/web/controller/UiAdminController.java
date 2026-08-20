@@ -280,6 +280,7 @@ public class UiAdminController {
               u.getPromotion());
     }
     model.addAttribute("form", form);
+    addGroupeContext(model, form);
     return "admin/users";
   }
 
@@ -295,10 +296,17 @@ public class UiAdminController {
   }
 
   @PostMapping("/users/{id}")
-  public String updateUser(@PathVariable String id, @ModelAttribute UserDto form, Model model) {
+  public String updateUser(
+      @PathVariable String id,
+      @ModelAttribute UserDto form,
+      @RequestParam(required = false) String groupeId,
+      Model model) {
     UserDto cleaned = sanitize(form);
     try {
       userService.update(id, cleaned);
+      if (cleaned.role() == Role.STUDENT && groupeId != null && !groupeId.isBlank()) {
+        userService.changeGroupe(id, groupeId);
+      }
       return "redirect:/admin/ui/users?role=" + cleaned.role();
     } catch (RuntimeException e) {
       return renderUserError(model, cleaned, friendly(e));
@@ -319,8 +327,16 @@ public class UiAdminController {
     model.addAttribute("role", form.role());
     model.addAttribute("users", userService.listByRole(form.role()));
     model.addAttribute("form", form);
+    addGroupeContext(model, form);
     model.addAttribute("error", error);
     return "admin/users";
+  }
+
+  private void addGroupeContext(Model model, UserDto form) {
+    if (form.role() == Role.STUDENT && form.id() != null) {
+      model.addAttribute("groupes", userService.groupesForPromo(form.promotion()));
+      model.addAttribute("groupeRefs", userService.groupeRefsOf(form.id()));
+    }
   }
 
   private static UserDto sanitize(UserDto dto) {

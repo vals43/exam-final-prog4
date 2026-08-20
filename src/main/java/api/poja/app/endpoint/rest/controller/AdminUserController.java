@@ -49,6 +49,13 @@ public class AdminUserController {
     return userMapper.toDto(userService.update(id, dto));
   }
 
+  @PutMapping("/{id}/group")
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserDto changeGroup(@PathVariable String id, @RequestParam String groupeId) {
+    userService.changeGroupe(id, groupeId);
+    return userMapper.toDto(userService.getById(id));
+  }
+
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
   public void delete(@PathVariable String id) {

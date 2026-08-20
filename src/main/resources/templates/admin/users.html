@@ -98,6 +98,14 @@
                 </select>
                 <div class="hint">Obligatoire pour un étudiant.</div>
               </div>
+              <div class="field" th:if="${form.role.name() == 'STUDENT' && form.id != null}">
+                <label for="groupeId">Changer de groupe</label>
+                <select id="groupeId" name="groupeId">
+                  <option value="">—</option>
+                  <option th:each="g : ${groupes}" th:value="${g.id}" th:text="${g.ref}">J1</option>
+                </select>
+                <div class="hint" th:if="${!#lists.isEmpty(groupeRefs)}" th:text="'Groupes actuels : ' + ${#strings.listJoin(groupeRefs, ', ')}">Groupes actuels : J1</div>
+              </div>
               <div class="field">
                 <label for="promotion">Promotion (année d'entrée)</label>
                 <input type="number" id="promotion" th:field="*{promotion}" min="2020" max="2099" />

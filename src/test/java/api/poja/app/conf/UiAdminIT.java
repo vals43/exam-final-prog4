@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import api.poja.app.model.Groupe;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 
@@ -310,6 +311,51 @@ public class UiAdminIT extends UiBaseIT {
         .andExpect(status().is3xxRedirection());
 
     assertThat(userRepository.findById(student.getId())).isPresent();
+  }
+
+  @Test
+  void admin_changes_student_group() throws Exception {
+    Cookie session = login("admin@hei.school");
+    var j1 = groupeRepository.save(Groupe.builder().ref("J1").build());
+
+    mockMvc
+        .perform(
+            post("/admin/ui/users/" + student.getId())
+                .param("std", student.getStd() == null ? "" : student.getStd())
+                .param("nom", student.getNom())
+                .param("prenom", student.getPrenom())
+                .param("email", student.getEmail())
+                .param("role", "STUDENT")
+                .param("parcours", "EL")
+                .param("promotion", "2023")
+                .param("groupeId", j1.getId())
+                .cookie(session))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/admin/ui/users?role=STUDENT"));
+
+    var inscriptions = inscriptionRepository.findByStudentId(student.getId());
+    assertThat(inscriptions).isNotEmpty();
+    inscriptions.forEach(i -> assertThat(i.getGroupe().getRef()).isEqualTo("J1"));
+  }
+
+  @Test
+  void admin_changing_student_group_to_other_promotion_shows_error() throws Exception {
+    Cookie session = login("admin@hei.school");
+
+    mockMvc
+        .perform(
+            post("/admin/ui/users/" + student.getId())
+                .param("std", student.getStd() == null ? "" : student.getStd())
+                .param("nom", student.getNom())
+                .param("prenom", student.getPrenom())
+                .param("email", student.getEmail())
+                .param("role", "STUDENT")
+                .param("parcours", "EL")
+                .param("promotion", "2023")
+                .param("groupeId", groupe.getId())
+                .cookie(session))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("appartient pas")));
   }
 
   // ---------------- RELEVÉS ----------------
