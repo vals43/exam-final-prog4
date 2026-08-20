@@ -166,6 +166,37 @@ paths:
           description: Supprimé
         '404':
           description: Introuvable
+  /admin/users/{id}/group:
+    put:
+      tags: [Admin]
+      summary: Changer le groupe d'un étudiant dans sa promotion
+      description: >
+        Applique le nouveau groupe à toutes les inscriptions de l'étudiant.
+        Refusé si la lettre (G/H/J) du groupe demandé ne correspond pas à la
+        promotion de l'étudiant (409).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: groupeId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: J1
+      responses:
+        '200':
+          description: Étudiant déplacé vers le nouveau groupe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '404':
+          description: Étudiant ou groupe introuvable
+        '409':
+          description: Groupe d'une autre promotion
   /admin/cours:
     get:
       tags: [Admin]
@@ -477,6 +508,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/AffectationDto'
   /teacher/notes:
+    get:
+      tags: [Teacher]
+      summary: Notes saisies par le prof connecté
+      description: >
+        Renvoie les notes déjà saisies sur les matières affectées au prof connecté.
+      responses:
+        '200':
+          description: Liste des notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NoteDto'
     post:
       tags: [Teacher]
       summary: Noter un étudiant à un examen de sa matière
@@ -523,6 +568,33 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/NoteViewDto'
+  /student/releves/{annee}:
+    get:
+      tags: [Student]
+      summary: Relevé de notes de l'étudiant connecté pour une année
+      description: >
+        Génère le relevé (moyenne générale + crédits). En mode COMPLET, toutes les
+        notes de l'année doivent être saisies.
+      parameters:
+        - name: annee
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 3
+        - name: mode
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ReleveMode'
+      responses:
+        '200':
+          description: Relevé détaillé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleveDto'
   /promotions:
     get:
       tags: [Promotions]

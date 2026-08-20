@@ -10,7 +10,7 @@ Spring Boot 3.2.2 + PostgreSQL + JWT, déployée sur AWS via le template [Poja](
   - `TEACHER` : note uniquement ses matières affectées (`/teacher/notes`), avec historisation (`NoteHistory`).
   - `ADMIN` : CRUD utilisateurs, cours, affectations, examens, relevés et diplômés.
 - **Deux parcours** : EL et TN — les notes d'un parcours n'apparaissent jamais sur le bulletin de l'autre.
-- **Groupes par promotion, non fixes** : chaque promotion a 3 groupes (G1/G2/G3, H1/H2/H3, J1/J2/J3) ; dès le S4, G1/G2 = EL et G3 = TN ; un étudiant peut changer de groupe, ses notes sont conservées via les inscriptions.
+- **Groupes par promotion, non fixes** : chaque promotion a 3 groupes (G1/G2/G3, H1/H2/H3, J1/J2/J3) ; dès le S4, les cours spécifiques EL sont affectés aux G1/G2 et ceux de TN au G3 ; un étudiant peut changer de groupe à tout moment (via l'admin), ses notes sont conservées via les inscriptions.
 - **Relevés de notes PDF** : provisoire ou complet (moyenne générale + crédits), upload S3 puis envoi par **email asynchrone** (SQS + SES).
 - **Liste des diplômés XLSX** : triée par rang, téléchargeable directement (S3 pre-signed), pour chaque promotion.
 - **Interface Thymeleaf** : liste des promotions + bouton « Télécharger la liste des diplômés ».
@@ -49,7 +49,7 @@ export SPRING_DATASOURCE_URL=<postgres-url>
 | jessica@hei.edu | STUDENT (TN) — promo 2023 (J) | password123 |
 | christophe@hei.edu | STUDENT (EL) — promo 2023 (J) | password123 |
 
-Le seed charge 3 cohortes réelles HEI (promotions G/H/J = 2021/2022/2023) avec 3 ans de cours/examens. Référentiel à **30 crédits par semestre** (60/an) : cours communs aux deux parcours, plus des cours **distincts EL/TN dès le S4** — EL : PROG4, SYS3 (S4), PROG5, SYS4 (S5) ; TN : TN1, METIER1 (S4), TN2, METIER2 (S5) ; le S6 est uniquement le stage PROJET4 (30 crédits). Chaque promotion a **3 groupes** (G1/G2/G3, H1/H2/H3, J1/J2/J3) ; les inscriptions montrent des **changements de groupe** (ex. J3→J1, J1→J3) et, dès le S4, les étudiants EL sont en G1/G2 et les TN en G3. Parmi les étudiants, 5 sont diplômés (Fanjasoa, Loiqua, Ninah, Fanhasina, Nicolas) et 4 échouent (Mihary, Joachim, Jessica, Christophe).
+Le seed charge 3 cohortes réelles HEI (promotions G/H/J = 2021/2022/2023) avec 3 ans de cours/examens. Référentiel à **30 crédits par semestre** (60/an) : cours communs aux deux parcours, plus des cours **distincts EL/TN dès le S4** — EL : PROG4, SYS3 (S4), PROG5, SYS4 (S5) ; TN : TN1, METIER1 (S4), TN2, METIER2 (S5) ; le S6 est uniquement le stage PROJET4 (30 crédits). Chaque promotion a **3 groupes** (G1/G2/G3, H1/H2/H3, J1/J2/J3) ; les inscriptions montrent des **changements de groupe** (ex. J3→J1, J1→J3). Parmi les étudiants, 5 sont diplômés (Fanjasoa, Loiqua, Ninah, Fanhasina, Nicolas) et 4 échouent (Mihary, Joachim, Jessica, Christophe).
 
 ## API principales
 
@@ -68,6 +68,7 @@ Le seed charge 3 cohortes réelles HEI (promotions G/H/J = 2021/2022/2023) avec 
 | GET | `/admin/examens?coursId=` | ADMIN |
 | POST | `/admin/examens` (somme des coefficients = 1) | ADMIN |
 | POST | `/admin/releves/{studentId}/{annee}?mode=PROVISOIRE\|COMPLET` | ADMIN |
+| PUT | `/admin/users/{id}/group?groupeId=` | ADMIN |
 | GET | `/promotions` | ADMIN, TEACHER |
 | GET | `/promotions/{annee}/diplomes` | ADMIN |
 
