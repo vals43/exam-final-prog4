@@ -197,7 +197,10 @@ public class UiTeacherController {
             .orElseThrow(() -> new NotFoundException("Affectation " + coursId + "/" + groupeId));
     Cours cours = affectation.getCours();
     List<Examen> examens = examenService.listByCoursId(coursId);
-    List<Inscription> inscriptions = inscriptionRepository.findByGroupeIdAndAnnee(groupeId, annee);
+    List<Inscription> inscriptions =
+        inscriptionRepository.findByGroupeIdAndAnnee(groupeId, annee).stream()
+            .filter(i -> i.getSemestre().equals(cours.getSemestre()))
+            .toList();
 
     Map<String, Note> notesByKey = new HashMap<>();
     for (Note n : noteRepository.findAll()) {

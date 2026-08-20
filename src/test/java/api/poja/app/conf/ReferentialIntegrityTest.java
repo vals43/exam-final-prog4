@@ -13,8 +13,8 @@ class ReferentialIntegrityTest {
 
   @Test
   void chaqueSemestreVautExactement30CreditsPourELEtTN() {
-    var el = Parcours.builder().code(ParcoursType.EL).nom("Électronicien").build();
-    var tn = Parcours.builder().code(ParcoursType.TN).nom("Télécommunicant").build();
+    var el = Parcours.builder().code(ParcoursType.EL).nom("Ecosysteme Logiciel").build();
+    var tn = Parcours.builder().code(ParcoursType.TN).nom("Transformation Numerique").build();
     var cours = SchoolDataSeeder.definitions(el, tn);
 
     for (int semestre = 1; semestre <= 6; semestre++) {

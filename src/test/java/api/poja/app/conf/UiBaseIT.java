@@ -87,7 +87,7 @@ public abstract class UiBaseIT extends BaseIT {
     student = saveUser("student@hei.school", Role.STUDENT, ParcoursType.EL, 2023);
     el =
         parcoursRepository.save(
-            Parcours.builder().code(ParcoursType.EL).nom("Électronicien").build());
+            Parcours.builder().code(ParcoursType.EL).nom("Ecosysteme Logiciel").build());
     groupe = groupeRepository.save(Groupe.builder().ref("G1").build());
     cours =
         coursRepository.save(
