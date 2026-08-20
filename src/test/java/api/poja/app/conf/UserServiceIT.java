@@ -43,6 +43,7 @@ public class UserServiceIT extends BaseIT {
             "john@hei.school",
             Role.STUDENT,
             ParcoursType.EL,
+            null,
             null);
 
     var created = userService.create(dto);
@@ -56,7 +57,8 @@ public class UserServiceIT extends BaseIT {
   @Test
   void create_throws_when_email_already_used() {
     var dto =
-        new UserDto(null, "STD-0001", "Doe", "John", "dup@hei.school", Role.TEACHER, null, null);
+        new UserDto(
+            null, "STD-0001", "Doe", "John", "dup@hei.school", Role.TEACHER, null, null, null);
     userService.create(dto);
 
     assertThrows(
@@ -64,7 +66,15 @@ public class UserServiceIT extends BaseIT {
         () ->
             userService.create(
                 new UserDto(
-                    null, "STD-0002", "Doe", "Jane", "dup@hei.school", Role.TEACHER, null, null)));
+                    null,
+                    "STD-0002",
+                    "Doe",
+                    "Jane",
+                    "dup@hei.school",
+                    Role.TEACHER,
+                    null,
+                    null,
+                    null)));
   }
 
   @Test
@@ -74,7 +84,15 @@ public class UserServiceIT extends BaseIT {
         () ->
             userService.create(
                 new UserDto(
-                    null, "STD-0001", "Doe", "John", "p@hei.school", Role.STUDENT, null, null)));
+                    null,
+                    "STD-0001",
+                    "Doe",
+                    "John",
+                    "p@hei.school",
+                    Role.STUDENT,
+                    null,
+                    null,
+                    null)));
   }
 
   @Test
@@ -95,7 +113,15 @@ public class UserServiceIT extends BaseIT {
         userService.update(
             original.getId(),
             new UserDto(
-                null, null, "Doe", "Jane", "new@hei.school", Role.STUDENT, ParcoursType.TN, null));
+                null,
+                null,
+                "Doe",
+                "Jane",
+                "new@hei.school",
+                Role.STUDENT,
+                ParcoursType.TN,
+                null,
+                null));
 
     assertEquals(original.getId(), updated.getId());
     assertEquals("STD-0001", updated.getStd());

@@ -104,8 +104,8 @@ public class SchoolDataSeeder implements CommandLineRunner {
       return;
     }
 
-    var el = newParcours(ParcoursType.EL, "Électronicien");
-    var tn = newParcours(ParcoursType.TN, "Télécommunicant");
+    var el = newParcours(ParcoursType.EL, "Ecosysteme Logiciel");
+    var tn = newParcours(ParcoursType.TN, "Transformation Numerique");
     parcoursRepository.saveAll(List.of(el, tn));
 
     var g1 = newGroupe("G1");

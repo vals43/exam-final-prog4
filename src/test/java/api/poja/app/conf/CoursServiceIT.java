@@ -79,7 +79,7 @@ public class CoursServiceIT extends BaseIT {
     var cours = coursService.create(new CoursDto(null, "PROG9", "Programmation 9", 6, 1));
     var parcours =
         parcoursRepository.save(
-            Parcours.builder().code(ParcoursType.EL).nom("Électronicien").build());
+            Parcours.builder().code(ParcoursType.EL).nom("Ecosysteme Logiciel").build());
 
     coursService.addParcours(cours.getId(), parcours.getId());
 

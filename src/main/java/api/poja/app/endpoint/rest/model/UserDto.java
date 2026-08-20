@@ -5,6 +5,7 @@ import api.poja.app.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 public record UserDto(
     String id,
@@ -14,4 +15,5 @@ public record UserDto(
     @NotBlank @Email String email,
     @NotNull Role role,
     ParcoursType parcours,
-    Integer promotion) {}
+    Integer promotion,
+    List<String> coursIds) {}
