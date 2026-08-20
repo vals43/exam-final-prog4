@@ -30,7 +30,7 @@ public class Inscription {
   @JoinColumn(name = "student_id", nullable = false)
   private User student;
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "groupe_id", nullable = false)
   private Groupe groupe;
 
