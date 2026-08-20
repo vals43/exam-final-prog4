@@ -265,8 +265,7 @@ public class UiAdminController {
       Model model) {
     model.addAttribute("role", role);
     model.addAttribute("users", userService.listByRole(role));
-    model.addAttribute("coursList", coursRepository.findAll());
-    UserDto form = new UserDto(null, "", "", "", "", role, null, null, List.of());
+    UserDto form = new UserDto(null, "", "", "", "", role, null, null);
     if (edit != null) {
       var u = userService.getById(edit);
       form =
@@ -278,8 +277,7 @@ public class UiAdminController {
               u.getEmail(),
               u.getRole(),
               u.getParcours(),
-              u.getPromotion(),
-              userService.coursIdsOf(u));
+              u.getPromotion());
     }
     model.addAttribute("form", form);
     return "admin/users";
@@ -335,8 +333,7 @@ public class UiAdminController {
         dto.email(),
         dto.role(),
         dto.parcours(),
-        dto.promotion(),
-        dto.coursIds());
+        dto.promotion());
   }
 
   // ---------------- RELEVÉS ----------------

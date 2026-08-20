@@ -5,15 +5,13 @@ import api.poja.app.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.List;
 
 public record UserDto(
     String id,
-    String std,
+    @NotBlank String std,
     @NotBlank String nom,
     @NotBlank String prenom,
     @NotBlank @Email String email,
     @NotNull Role role,
     ParcoursType parcours,
-    Integer promotion,
-    List<String> coursIds) {}
+    Integer promotion) {}

@@ -43,7 +43,6 @@ public class UserServiceIT extends BaseIT {
             "john@hei.school",
             Role.STUDENT,
             ParcoursType.EL,
-            null,
             null);
 
     var created = userService.create(dto);
@@ -58,7 +57,7 @@ public class UserServiceIT extends BaseIT {
   void create_throws_when_email_already_used() {
     var dto =
         new UserDto(
-            null, "STD-0001", "Doe", "John", "dup@hei.school", Role.TEACHER, null, null, null);
+            null, "STD-0001", "Doe", "John", "dup@hei.school", Role.TEACHER, null, null);
     userService.create(dto);
 
     assertThrows(
@@ -72,7 +71,6 @@ public class UserServiceIT extends BaseIT {
                     "Jane",
                     "dup@hei.school",
                     Role.TEACHER,
-                    null,
                     null,
                     null)));
   }
@@ -90,7 +88,6 @@ public class UserServiceIT extends BaseIT {
                     "John",
                     "p@hei.school",
                     Role.STUDENT,
-                    null,
                     null,
                     null)));
   }
@@ -120,7 +117,6 @@ public class UserServiceIT extends BaseIT {
                 "new@hei.school",
                 Role.STUDENT,
                 ParcoursType.TN,
-                null,
                 null));
 
     assertEquals(original.getId(), updated.getId());

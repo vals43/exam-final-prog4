@@ -89,13 +89,6 @@
                   <option value="ADMIN">Administrateur</option>
                 </select>
               </div>
-              <div class="field" th:if="${form.role.name() == 'TEACHER'}">
-                <label for="coursIds">Matières enseignées</label>
-                <select id="coursIds" th:field="*{coursIds}" multiple size="7">
-                  <option th:each="c : ${coursList}" th:value="${c.id}" th:text="${c.ref} + ' — ' + ${c.intitule}">PROG1</option>
-                </select>
-                <div class="hint">Les affectations sont créées automatiquement pour chaque groupe/promo où le cours est donné.</div>
-              </div>
               <div class="field">
                 <label for="parcours">Parcours</label>
                 <select id="parcours" th:field="*{parcours}">
